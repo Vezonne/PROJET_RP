@@ -21,9 +21,25 @@ Déplacement de R1 vers la droite de a cases: ***(x1+a,y1)***
 
 état final:
 
-R1=(xi,yi)
+R1 = (xi,yi) = C
 
 ### Question 2.
+
+Pour un plateau de taille n x n avec un seul robot on a:\
+n<sup>2</sup> solutions
+
+Pour un plateau de taille n x n avec deux robots on a:\
+n<sup>2</sup> x (n-1)<sup>2</sup> solutions
+
+Donc pour un plateau de taille n x n avec k robot on a:\
+
+Multiple de i=0 à k-1 de (n<sup>2</sup>-1)
+
+### Question 3.
+
+Le nombre de successeur possible est 5<sup>k</sup>-1
+car il y a k robots sur le plateau et chaque robot a 5 successeurs (haut, bas, droite, gauche, immobile) cependant le cas où tous les robots ne bougent pas n'est pas un successeur donc on enlève un cas. 
+
 
 ## Partie 2: Résolution par A*
 

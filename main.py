@@ -2,7 +2,14 @@ import numpy as np
 import random
 from matplotlib import pyplot as plt
 
+
+
+position_debut_robot=[]
+position_cible=None
+
 def generateRandomInstances(n,k):
+    global position_cible
+    global position_debut_robot
     if not type(n) is int or not type(k) is int:
         raise TypeError("Seulement des entiers sont permis") 
     if k <= 0 or k>5:
@@ -67,6 +74,7 @@ def generateRandomInstances(n,k):
                 if cellules[abs,ord]==0:
                     cellules[abs,ord]=i
                     posok=True
+                    position_debut_robot.append((abs,ord))
                 
         #choix d'une cible but
 
@@ -79,6 +87,7 @@ def generateRandomInstances(n,k):
                 if (((horizontaux[butx-1,buty]==1) or (horizontaux[butx,buty]==1)) and ((verticaux[butx,buty-1]==1) or (verticaux[butx,buty]==1))):
                     cellules[butx,buty]=-1
                     posok=True
+                    position_cible=(butx,buty)
                 
                 
     else:
@@ -105,6 +114,7 @@ def generateRandomInstances(n,k):
                     if (cellules[abs,ord]==0):
                         cellules[abs,ord]=i
                         posok=True
+                        position_debut_robot.append((abs,ord))
                 
         #choix d'une cible but
 
@@ -119,6 +129,7 @@ def generateRandomInstances(n,k):
                     if (((horizontaux[butx-1,buty]==1) or (horizontaux[butx,buty]==1)) and ((verticaux[butx,buty-1]==1) or (verticaux[butx,buty]==1))):
                         cellules[butx,buty]=-1
                         posok=True
+                        position_cible=(butx,buty)
         
     #print("murs verticaux =")
     #print(verticaux)
@@ -171,18 +182,90 @@ def showgrid(n,cellules,verticaux,horizontaux):
                 
     plt.show()
     #plt.savefig('exemple.png')
+
+def deplacement_haut(robot_pos):
+    global cellules
+    
+    pos=robot_pos[0]
+    if pos!=0 and horizontaux[pos-1][robot_pos[1]]==0 and cellules[pos-1][robot_pos[1]]<=0:
+        cellules[pos][robot_pos[1]]=0
+        cellules[pos-1][robot_pos[1]]=1
+        deplacement_haut((pos-1,robot_pos[1]))
+        
+    else:
+        return ((pos,robot_pos[1]))
+    
+def deplacement_bas(robot_pos):
+    global cellules
+    
+    pos=robot_pos[0]
+    if pos!=n-1 and horizontaux[pos][robot_pos[1]]==0 and cellules[pos+1][robot_pos[1]]<=0:
+        cellules[pos][robot_pos[1]]=0
+        cellules[pos+1][robot_pos[1]]=1
+        deplacement_bas((pos+1,robot_pos[1]))
+        
+    else:
+        return ((pos,robot_pos[1]))
+    
+def deplacement_gauche(robot_pos):
+    global cellules
+    pos=robot_pos[1]
+    if pos!=0 and verticaux[robot_pos[0]][pos-1]==0 and cellules[robot_pos[0]][pos-1]<=0:
+        cellules[robot_pos[0]][pos]=0
+        cellules[robot_pos[0]][pos-1]=1
+        deplacement_gauche((robot_pos[0],pos-1))
+        
+    else:
+        return ((robot_pos[0],pos))
+    
+def deplacement_droite(robot_pos):
+    global cellules
+    pos=robot_pos[1]
+    if pos!=n-1 and verticaux[robot_pos[0]][pos]==0 and cellules[robot_pos[0]][pos+1]<=0:
+        cellules[robot_pos[0]][pos]=0
+        cellules[robot_pos[0]][pos+1]=1
+        deplacement_droite((robot_pos[0],pos+1))
+        
+    else:
+        return ((robot_pos[0],pos))
     
 n=6
 k=3
 
 cellules,verticaux,horizontaux=generateRandomInstances(n,k)
+
+print(position_debut_robot)
+print(position_cible)
+showgrid(n,cellules,verticaux,horizontaux)
+#deplacement_haut(position_debut_robot[0])
+#deplacement_bas(position_debut_robot[0])
+#deplacement_gauche(position_debut_robot[0])
+deplacement_droite(position_debut_robot[0])
+
 showgrid(n,cellules,verticaux,horizontaux)
 
-n=16
+
+position_debut_robot=[]
+
+"""n=16
 k=5
 
 cellules,verticaux,horizontaux=generateRandomInstances(n,k)
-showgrid(n,cellules,verticaux,horizontaux)
+
+print(position_debut_robot)
+print(position_cible)
+position_debut_robot=[]
+
+showgrid(n,cellules,verticaux,horizontaux)"""
+
+
+
+
+
+
+
+
+
 
 
 
