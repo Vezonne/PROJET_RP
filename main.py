@@ -183,25 +183,25 @@ def showgrid(n,cellules,verticaux,horizontaux):
     plt.show()
     #plt.savefig('exemple.png')
      
-# Ces fonctions permettent de déplacer un robot dans une grille en 2D.
-# Chaque fonction vérifie si le mouvement est possible, puis effectue le mouvement et renvoie la nouvelle position du robot.
 
 def move_up(robot_pos, cellules):
-    # Récupère les coordonnées du robot
+    """
+    Déplace la position du robot vers le haut d'une cellule si possible.
+
+    Args:
+        robot_pos (tuple): La position actuelle du robot sous forme de tuple (x, y).
+        cellules (list): Une liste 2D représentant la grille de cellules.
+
+    Returns:
+        tuple: La nouvelle position du robot après le déplacement vers le haut, sous forme de tuple (x, y).
+    """
     x = robot_pos[0]
     y = robot_pos[1]
-    # Vérifie si le robot peut se déplacer vers le haut
-    if x!=0 and horizontaux[x-1][y]==0 and cellules[x-1][y]<=0:
-        # Effectue le mouvement
-        cellules[x][y]=0
-        cellules[x-1][y]=1
-        # Récursivement, continue à se déplacer vers le haut
-        (x,y) = move_up((x-1,y), cellules)
-    # Renvoie la nouvelle position du robot
-    return (x,y)
-
-# Les fonctions move_down, move_left et move_right fonctionnent de la même manière que move_up, mais pour les autres directions.
-
+    if x != 0 and horizontaux[x-1][y] == 0 and cellules[x-1][y] <= 0:
+        cellules[x][y] = 0
+        cellules[x-1][y] = 1
+        (x, y) = move_up((x-1, y), cellules)
+    return (x, y)
 
 def move_down(robot_pos, cellules):
 
@@ -234,35 +234,33 @@ def move_right(robot_pos, cellules):
     return (x,y)
 
 def deep_dive(cellules, verticaux, horizontaux, robot_pos, cible_pos, m=10, i=0, d=0):
-    # Cette fonction utilise une recherche en profondeur pour trouver le chemin le plus court vers une cible.
-    # cellules est une grille représentant l'espace de travail du robot.
-    # verticaux et horizontaux sont des grilles représentant les murs ou les obstacles.
-    # robot_pos est la position actuelle du robot.
-    # cible_pos est la position de la cible.
-    # m est le nombre maximum de mouvements que le robot peut effectuer.
-    # i est le nombre de mouvements que le robot a déjà effectués.
-    # d est la direction du dernier mouvement du robot (0 = aucune, 1 = horizontal, 2 = vertical).
+    """
+    Cette fonction utilise une recherche en profondeur pour trouver le chemin le plus court vers une cible.
 
+    Args:
+        cellules (list): Une grille représentant l'espace de travail du robot.
+        verticaux (list): Une grille représentant les murs ou les obstacles verticaux.
+        horizontaux (list): Une grille représentant les murs ou les obstacles horizontaux.
+        robot_pos (tuple): La position actuelle du robot.
+        cible_pos (tuple): La position de la cible.
+        m (int, optional): Le nombre maximum de mouvements que le robot peut effectuer. Defaults to 10.
+        i (int, optional): Le nombre de mouvements que le robot a déjà effectués. Defaults to 0.
+        d (int, optional): La direction du dernier mouvement du robot (0 = aucune, 1 = horizontal, 2 = vertical). Defaults to 0.
+
+    Returns:
+        int: Le nombre minimum de mouvements pour atteindre la cible.
+    """
     if robot_pos == cible_pos:
-        # Si le robot a atteint la cible, renvoie le nombre de mouvements effectués.
         return i
         
     if i == m:
-        # Si le robot a atteint le nombre maximum de mouvements, renvoie m+1.
         return m+1
     
     i += 1
-    # Incrémente le nombre de mouvements.
-
     res = []
-    # Initialise une liste pour stocker les résultats des mouvements possibles.
 
     match d:
-        # Selon la direction précédente, le robot peut se déplacer soit verticalement, soit horizontalement, soit dans toutes les directions.
         case 0: #up, down, left, right
-            # Pour chaque direction possible, la fonction effectue le mouvement, puis appelle récursivement deep_dive avec la nouvelle position et le nouveau nombre de mouvements.
-            # Les résultats sont stockés dans la liste res.
-            # Notez que cellules est copié avant chaque mouvement pour éviter de modifier la grille originale.
             ucel = cellules.copy()
             dcel = cellules.copy()
             lcel = cellules.copy()
@@ -278,7 +276,6 @@ def deep_dive(cellules, verticaux, horizontaux, robot_pos, cible_pos, m=10, i=0,
             res.append(deep_dive(lcel, verticaux, horizontaux, lpos, cible_pos, m, i, 1))
             res.append(deep_dive(rcel, verticaux, horizontaux, rpos, cible_pos, m, i, 1))
         case 1: #up or down
-            # Si le dernier mouvement était horizontal, le robot peut seulement se déplacer verticalement.
             ucel = cellules.copy()
             dcel = cellules.copy()
 
@@ -288,7 +285,6 @@ def deep_dive(cellules, verticaux, horizontaux, robot_pos, cible_pos, m=10, i=0,
             res.append(deep_dive(ucel, verticaux, horizontaux, upos, cible_pos, m, i, 2))
             res.append(deep_dive(dcel, verticaux, horizontaux, dpos, cible_pos, m, i, 2))
         case 2: #left or right
-            # Si le dernier mouvement était vertical, le robot peut seulement se déplacer horizontalement.
             lcel = cellules.copy()
             rcel = cellules.copy()
             
@@ -299,16 +295,69 @@ def deep_dive(cellules, verticaux, horizontaux, robot_pos, cible_pos, m=10, i=0,
             res.append(deep_dive(rcel, verticaux, horizontaux, rpos, cible_pos, m, i, 1))
 
     return min(res)
-    # Finalement, la fonction renvoie le minimum de res, qui est le nombre minimum de mouvements pour atteindre la cible.
         
-n=8
-k=3
+def multi_dive(cellules, verticaux, horizontaux, robots_pos, cible_pos, m=10, i=0):
+    """
+    Fonction récursive qui effectue une recherche multi-profondeur pour trouver le nombre minimum de mouvements nécessaires pour que les robots atteignent la position cible.
 
-# cellules,verticaux,horizontaux=generateRandomInstances(n,k)
-cellules,verticaux,horizontaux=np.asarray(test_cellules),np.asarray(test_verticaux),np.asarray(test_horizontaux)
+    Paramètres:
+    - cellules (list): Liste des cellules dans la grille.
+    - verticaux (list): Liste des murs verticaux dans la grille.
+    - horizontaux (list): Liste des murs horizontaux dans la grille.
+    - robots_pos (list): Liste des positions actuelles des robots.
+    - cible_pos (tuple): Position cible.
+    - m (int): Nombre maximum de mouvements autorisés.
+    - i (int): Nombre actuel de mouvements.
+
+    Retourne:
+    - int: Nombre minimum de mouvements nécessaires pour atteindre la position cible, ou m+1 si la position cible ne peut pas être atteinte en m mouvements.
+    """
+
+    if robots_pos[0] == cible_pos:
+        return i
+    
+    if i == m:
+        return m+1
+    
+    i += 1
+
+    res = []
+    
+    for r in range(len(robots_pos)):
+        ucel = cellules.copy()
+        dcel = cellules.copy()
+        lcel = cellules.copy()
+        rcel = cellules.copy()
+
+        robot = robots_pos[r]
+
+        ulist = robots_pos.copy()
+        ulist[r] = move_up(robot, ucel)
+
+        dlist = robots_pos.copy()
+        dlist[r] = move_down(robot, dcel)
+
+        llist = robots_pos.copy()
+        llist[r] = move_left(robot, lcel)
+
+        rlist = robots_pos.copy()
+        rlist[r] = move_right(robot, rcel)
+
+        res.append(multi_dive(ucel, verticaux, horizontaux, ulist, cible_pos, m, i))
+        res.append(multi_dive(dcel, verticaux, horizontaux, dlist, cible_pos, m, i))
+        res.append(multi_dive(lcel, verticaux, horizontaux, llist, cible_pos, m, i))
+        res.append(multi_dive(rcel, verticaux, horizontaux, rlist, cible_pos, m, i))
+    
+    return min(res)
+
+n=10
+k=4
+
+cellules,verticaux,horizontaux=generateRandomInstances(n,k)
+# cellules,verticaux,horizontaux=np.asarray(test_cellules),np.asarray(test_verticaux),np.asarray(test_horizontaux)
 
 position_cible = None
-position_robots = dict()
+position_robots = np.zeros(k, dtype=tuple)
 
 for i in range(len(cellules)):
     for j in range(len(cellules[i])):
@@ -321,6 +370,9 @@ print(position_robots)
 print(position_cible)
 
 shortest_path = deep_dive(cellules, verticaux, horizontaux, position_robots[0], position_cible)
+print(shortest_path)
+
+shortest_path = multi_dive(cellules, verticaux, horizontaux, position_robots, position_cible, shortest_path)
 print(shortest_path)
 
 showgrid(n,cellules,verticaux,horizontaux)
