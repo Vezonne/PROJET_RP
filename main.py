@@ -1,7 +1,7 @@
 import numpy as np
 import random
 from matplotlib import pyplot as plt
-
+from test import *
 
 
 position_debut_robot=[]
@@ -182,90 +182,214 @@ def showgrid(n,cellules,verticaux,horizontaux):
                 
     plt.show()
     #plt.savefig('exemple.png')
+     
 
-def deplacement_haut(robot_pos):
-    global cellules
-    
-    pos=robot_pos[0]
-    if pos!=0 and horizontaux[pos-1][robot_pos[1]]==0 and cellules[pos-1][robot_pos[1]]<=0:
-        cellules[pos][robot_pos[1]]=0
-        cellules[pos-1][robot_pos[1]]=1
-        deplacement_haut((pos-1,robot_pos[1]))
+def move_up(robot_pos, cellules):
+    """
+    Déplace la position du robot vers le haut d'une cellule si possible.
+
+    Args:
+        robot_pos (tuple): La position actuelle du robot sous forme de tuple (x, y).
+        cellules (list): Une liste 2D représentant la grille de cellules.
+
+    Returns:
+        tuple: La nouvelle position du robot après le déplacement vers le haut, sous forme de tuple (x, y).
+    """
+    x = robot_pos[0]
+    y = robot_pos[1]
+    if x != 0 and horizontaux[x-1][y] == 0 and cellules[x-1][y] <= 0:
+        cellules[x][y] = 0
+        cellules[x-1][y] = 1
+        (x, y) = move_up((x-1, y), cellules)
+    return (x, y)
+
+def move_down(robot_pos, cellules):
+
+    x = robot_pos[0]
+    y = robot_pos[1]
+    if x!=len(cellules)-1 and horizontaux[x][y]==0 and cellules[x+1][y]<=0:
+        cellules[x][y]=0
+        cellules[x+1][y]=1
+        (x,y) = move_down((x+1,y), cellules)
+    return (x,y)
+
+def move_left(robot_pos, cellules):
+
+    x = robot_pos[0]
+    y = robot_pos[1]
+    if y!=0 and verticaux[x][y-1]==0 and cellules[x][y-1]<=0:
+        cellules[x][y]=0
+        cellules[x][y-1]=1
+        (x,y) = move_left((x,y-1), cellules)
+    return (x,y)
+
+def move_right(robot_pos, cellules):
+
+    x = robot_pos[0]
+    y = robot_pos[1]
+    if y!=len(cellules)-1 and verticaux[x][y]==0 and cellules[x][y+1]<=0:
+        cellules[x][y]=0
+        cellules[x][y+1]=1
+        (x,y) = move_right((x,y+1), cellules)
+    return (x,y)
+
+def deep_dive(cellules, verticaux, horizontaux, robot_pos, cible_pos, m=10, i=0, d=0):
+    """
+    Cette fonction utilise une recherche en profondeur pour trouver le chemin le plus court vers une cible.
+
+    Args:
+        cellules (list): Une grille représentant l'espace de travail du robot.
+        verticaux (list): Une grille représentant les murs ou les obstacles verticaux.
+        horizontaux (list): Une grille représentant les murs ou les obstacles horizontaux.
+        robot_pos (tuple): La position actuelle du robot.
+        cible_pos (tuple): La position de la cible.
+        m (int, optional): Le nombre maximum de mouvements que le robot peut effectuer. Defaults to 10.
+        i (int, optional): Le nombre de mouvements que le robot a déjà effectués. Defaults to 0.
+        d (int, optional): La direction du dernier mouvement du robot (0 = aucune, 1 = horizontal, 2 = vertical). Defaults to 0.
+
+    Returns:
+        int: Le nombre minimum de mouvements pour atteindre la cible.
+    """
+    if robot_pos == cible_pos:
+        return i
         
-    else:
-        return ((pos,robot_pos[1]))
+    if i == m:
+        return m+1
     
-def deplacement_bas(robot_pos):
-    global cellules
-    
-    pos=robot_pos[0]
-    if pos!=n-1 and horizontaux[pos][robot_pos[1]]==0 and cellules[pos+1][robot_pos[1]]<=0:
-        cellules[pos][robot_pos[1]]=0
-        cellules[pos+1][robot_pos[1]]=1
-        deplacement_bas((pos+1,robot_pos[1]))
+    i += 1
+    res = []
+
+    match d:
+        case 0: #up, down, left, right
+            ucel = cellules.copy()
+            dcel = cellules.copy()
+            lcel = cellules.copy()
+            rcel = cellules.copy()
+
+            upos = move_up(robot_pos, ucel)
+            dpos = move_down(robot_pos, dcel)
+            lpos = move_left(robot_pos, lcel)
+            rpos = move_right(robot_pos, rcel)
+
+            res.append(deep_dive(ucel, verticaux, horizontaux, upos, cible_pos, m, i, 2))
+            res.append(deep_dive(dcel, verticaux, horizontaux, dpos, cible_pos, m, i, 2))
+            res.append(deep_dive(lcel, verticaux, horizontaux, lpos, cible_pos, m, i, 1))
+            res.append(deep_dive(rcel, verticaux, horizontaux, rpos, cible_pos, m, i, 1))
+        case 1: #up or down
+            ucel = cellules.copy()
+            dcel = cellules.copy()
+
+            upos = move_up(robot_pos, ucel)
+            dpos = move_down(robot_pos, dcel)
+
+            res.append(deep_dive(ucel, verticaux, horizontaux, upos, cible_pos, m, i, 2))
+            res.append(deep_dive(dcel, verticaux, horizontaux, dpos, cible_pos, m, i, 2))
+        case 2: #left or right
+            lcel = cellules.copy()
+            rcel = cellules.copy()
+            
+            lpos = move_left(robot_pos, lcel)
+            rpos = move_right(robot_pos, rcel)
+            
+            res.append(deep_dive(lcel, verticaux, horizontaux, lpos, cible_pos, m, i, 1))
+            res.append(deep_dive(rcel, verticaux, horizontaux, rpos, cible_pos, m, i, 1))
+
+    return min(res)
         
-    else:
-        return ((pos,robot_pos[1]))
+def multi_dive(cellules, verticaux, horizontaux, robots_pos, cible_pos, m=10, i=0):
+    """
+    Fonction récursive qui effectue une recherche multi-profondeur pour trouver le nombre minimum de mouvements nécessaires pour que les robots atteignent la position cible.
+
+    Paramètres:
+    - cellules (list): Liste des cellules dans la grille.
+    - verticaux (list): Liste des murs verticaux dans la grille.
+    - horizontaux (list): Liste des murs horizontaux dans la grille.
+    - robots_pos (list): Liste des positions actuelles des robots.
+    - cible_pos (tuple): Position cible.
+    - m (int): Nombre maximum de mouvements autorisés.
+    - i (int): Nombre actuel de mouvements.
+
+    Retourne:
+    - int: Nombre minimum de mouvements nécessaires pour atteindre la position cible, ou m+1 si la position cible ne peut pas être atteinte en m mouvements.
+    """
+
+    if robots_pos[0] == cible_pos:
+        return i
     
-def deplacement_gauche(robot_pos):
-    global cellules
-    pos=robot_pos[1]
-    if pos!=0 and verticaux[robot_pos[0]][pos-1]==0 and cellules[robot_pos[0]][pos-1]<=0:
-        cellules[robot_pos[0]][pos]=0
-        cellules[robot_pos[0]][pos-1]=1
-        deplacement_gauche((robot_pos[0],pos-1))
-        
-    else:
-        return ((robot_pos[0],pos))
+    if i == m:
+        return m+1
     
-def deplacement_droite(robot_pos):
-    global cellules
-    pos=robot_pos[1]
-    if pos!=n-1 and verticaux[robot_pos[0]][pos]==0 and cellules[robot_pos[0]][pos+1]<=0:
-        cellules[robot_pos[0]][pos]=0
-        cellules[robot_pos[0]][pos+1]=1
-        deplacement_droite((robot_pos[0],pos+1))
-        
-    else:
-        return ((robot_pos[0],pos))
+    i += 1
+
+    res = []
     
-n=6
-k=3
+    for r in range(len(robots_pos)):
+        ucel = cellules.copy()
+        dcel = cellules.copy()
+        lcel = cellules.copy()
+        rcel = cellules.copy()
+
+        robot = robots_pos[r]
+
+        ulist = robots_pos.copy()
+        ulist[r] = move_up(robot, ucel)
+
+        dlist = robots_pos.copy()
+        dlist[r] = move_down(robot, dcel)
+
+        llist = robots_pos.copy()
+        llist[r] = move_left(robot, lcel)
+
+        rlist = robots_pos.copy()
+        rlist[r] = move_right(robot, rcel)
+
+        res.append(multi_dive(ucel, verticaux, horizontaux, ulist, cible_pos, m, i))
+        res.append(multi_dive(dcel, verticaux, horizontaux, dlist, cible_pos, m, i))
+        res.append(multi_dive(lcel, verticaux, horizontaux, llist, cible_pos, m, i))
+        res.append(multi_dive(rcel, verticaux, horizontaux, rlist, cible_pos, m, i))
+    
+    return min(res)
+
+n=10
+k=4
 
 cellules,verticaux,horizontaux=generateRandomInstances(n,k)
+# cellules,verticaux,horizontaux=np.asarray(test_cellules),np.asarray(test_verticaux),np.asarray(test_horizontaux)
 
-print(position_debut_robot)
+position_cible = None
+position_robots = np.zeros(k, dtype=tuple)
+
+for i in range(len(cellules)):
+    for j in range(len(cellules[i])):
+        if cellules[i][j]==-1:
+            position_cible=(i,j)
+        elif cellules[i][j]>0:
+            position_robots[cellules[i][j]-1] = (i,j)
+
+print(position_robots)
 print(position_cible)
-showgrid(n,cellules,verticaux,horizontaux)
-#deplacement_haut(position_debut_robot[0])
-#deplacement_bas(position_debut_robot[0])
-#deplacement_gauche(position_debut_robot[0])
-deplacement_droite(position_debut_robot[0])
+
+shortest_path = deep_dive(cellules, verticaux, horizontaux, position_robots[0], position_cible)
+print(shortest_path)
+
+shortest_path = multi_dive(cellules, verticaux, horizontaux, position_robots, position_cible, shortest_path)
+print(shortest_path)
 
 showgrid(n,cellules,verticaux,horizontaux)
-
+#move_up(position_debut_robot[0])
+#move_down(position_debut_robot[0])
+#move_left(position_debut_robot[0])
+#move_right(position_debut_robot[0])
 
 position_debut_robot=[]
 
-"""n=16
-k=5
+# n=16
+# k=5
 
-cellules,verticaux,horizontaux=generateRandomInstances(n,k)
+# cellules,verticaux,horizontaux=generateRandomInstances(n,k)
 
-print(position_debut_robot)
-print(position_cible)
-position_debut_robot=[]
+# print(position_debut_robot)
+# print(position_cible)
+# position_debut_robot=[]
 
-showgrid(n,cellules,verticaux,horizontaux)"""
-
-
-
-
-
-
-
-
-
-
-
-
+# showgrid(n,cellules,verticaux,horizontaux)
