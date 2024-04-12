@@ -43,6 +43,14 @@ car il y a k robots sur le plateau et chaque robot a 5 successeurs (haut, bas, d
 
 ## Partie 2: Résolution par A*
 
+### Question 8.
+
+L'heuristique h<sub>1</sub> est coïncidente car il y a un seul état but qui est la case cible et l'heuristique de celle-ci est à 0.\
+L'heuristique h<sub>1</sub> est monotone car dans tous les cas h(n)- h(m) <= k(n,m)\
+par exemple si le robot se trouve sur une case d'heuristique h(n)=2 et qu'il effectue un mouvement vers une case m donc k(n,m)=1 l'heuristique de la case m est forcément égale à 1 ou 2 car on part d'une case où h(n)=2 donc h(n)-h(m) est focement inferieur ou egale à 1 donc c'est une heuristique monotone.
+
+Donc l'heuristique h<sub>1</sub> est à la fois monotone et coïncidente don celle est aussi minorante.
+
 ## Partie 3: Résolution par A* bidirectionnel (optionnel)
 
 
