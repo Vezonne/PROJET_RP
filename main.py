@@ -393,3 +393,39 @@ position_debut_robot=[]
 # position_debut_robot=[]
 
 # showgrid(n,cellules,verticaux,horizontaux)
+
+
+
+def heuristique(cellules):
+    h=cellules.copy()
+    tmp_i=0
+    tmp_j=0
+
+    for i in range (len(h)):
+        for j in range(len(h)):
+            if h[i][j]==-1:
+                tmp_i=i
+                tmp_j=j
+
+    for i in range (len(h)):
+        for j in range(len(h)):
+            if i!=tmp_i and j!= tmp_j:
+                h[i][j]=2
+
+            else:
+                h[i][j]=1
+
+    h[tmp_i][tmp_j]=0
+
+    return h
+
+def successeurs(cellules,robot_pos,cible_pos,k):
+    succ=[[]]*(5**k-1)
+    return succ
+
+def recherche_A_etoile(robot_pos,cible_pos,successeurs,h):
+    O=[robot_pos]
+    F=[]
+
+    return 0
+
