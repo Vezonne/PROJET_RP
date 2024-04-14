@@ -372,8 +372,8 @@ print(position_cible)
 shortest_path = deep_dive(cellules, verticaux, horizontaux, position_robots[0], position_cible)
 print(shortest_path)
 
-shortest_path = multi_dive(cellules, verticaux, horizontaux, position_robots, position_cible, shortest_path)
-print(shortest_path)
+"""shortest_path = multi_dive(cellules, verticaux, horizontaux, position_robots, position_cible, shortest_path)
+print(shortest_path)"""
 
 showgrid(n,cellules,verticaux,horizontaux)
 #move_up(position_debut_robot[0])
@@ -398,14 +398,8 @@ position_debut_robot=[]
 
 def heuristique(cellules):
     h=cellules.copy()
-    tmp_i=0
-    tmp_j=0
-
-    for i in range (len(h)):
-        for j in range(len(h)):
-            if h[i][j]==-1:
-                tmp_i=i
-                tmp_j=j
+    tmp_i=np.where(cellules==1)[0][0]
+    tmp_j=np.where(cellules==1)[1][0]
 
     for i in range (len(h)):
         for j in range(len(h)):
@@ -415,17 +409,29 @@ def heuristique(cellules):
             else:
                 h[i][j]=1
 
-    h[tmp_i][tmp_j]=0
+        h[tmp_i][tmp_j]=0
 
     return h
 
-def successeurs(cellules,robot_pos,cible_pos,k):
-    succ=[[]]*(5**k-1)
-    return succ
+def successeurs(robot_pos,cellules):
+    return [move_down(robot_pos,cellules.copy()),move_up(robot_pos,cellules.copy()),move_left(robot_pos,cellules.copy()),move_right(robot_pos,cellules.copy())]
 
-def recherche_A_etoile(robot_pos,cible_pos,successeurs,h):
+def recherche_A_etoile(robot_pos,cible_pos,h):
     O=[robot_pos]
     F=[]
-
-    return 0
-
+    choisi=robot_pos
+    n=0
+    trouve=False
+    while O!=[] and not(trouve):
+        n+=1
+        s=successeurs(choisi,cellules.copy())
+        O.append(s)
+        O.remove(choisi)
+        F.append(choisi)
+        for o in O:
+            if o==cible_pos:
+                trouve= True
+                return n
+            else:
+                if h[o[0]][o[1]]<h[choisi[0]][choisi[1]]:
+                    choisi=o
