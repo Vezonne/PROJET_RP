@@ -372,8 +372,8 @@ print(position_cible)
 shortest_path = deep_dive(cellules, verticaux, horizontaux, position_robots[0], position_cible)
 print(shortest_path)
 
-"""shortest_path = multi_dive(cellules, verticaux, horizontaux, position_robots, position_cible, shortest_path)
-print(shortest_path)"""
+shortest_path = multi_dive(cellules, verticaux, horizontaux, position_robots, position_cible, shortest_path)
+print(shortest_path)
 
 showgrid(n,cellules,verticaux,horizontaux)
 #move_up(position_debut_robot[0])
