@@ -416,22 +416,24 @@ def heuristique(cellules):
 def successeurs(robot_pos,cellules):
     return [move_down(robot_pos,cellules.copy()),move_up(robot_pos,cellules.copy()),move_left(robot_pos,cellules.copy()),move_right(robot_pos,cellules.copy())]
 
-def recherche_A_etoile(robot_pos,cible_pos,h):
+def recherche_A_etoile(robot_pos,cible_pos,cellules,h):
     O=[robot_pos]
     F=[]
     choisi=robot_pos
     n=0
-    trouve=False
-    while O!=[] and not(trouve):
+    while O!=[]:
         n+=1
-        s=successeurs(choisi,cellules.copy())
-        O.append(s)
+        s=successeurs(choisi,cellules)
+        for i in s:
+            O.append(i)
         O.remove(choisi)
         F.append(choisi)
         for o in O:
             if o==cible_pos:
-                trouve= True
                 return n
             else:
                 if h[o[0]][o[1]]<h[choisi[0]][choisi[1]]:
                     choisi=o
+
+a=recherche_A_etoile(position_robots[0],position_cible,cellules,heuristique(cellules))
+print(a)
