@@ -1,7 +1,9 @@
 import numpy as np
 import random
+import heapq as hq
 from matplotlib import pyplot as plt
 from test import *
+
 
 
 position_debut_robot=[]
@@ -372,10 +374,10 @@ print(position_cible)
 shortest_path = deep_dive(cellules, verticaux, horizontaux, position_robots[0], position_cible)
 print(shortest_path)
 
-shortest_path = multi_dive(cellules, verticaux, horizontaux, position_robots, position_cible, shortest_path)
-print(shortest_path)
+# shortest_path = multi_dive(cellules, verticaux, horizontaux, position_robots, position_cible, shortest_path)
+# print(shortest_path)
 
-showgrid(n,cellules,verticaux,horizontaux)
+# showgrid(n,cellules,verticaux,horizontaux)
 #move_up(position_debut_robot[0])
 #move_down(position_debut_robot[0])
 #move_left(position_debut_robot[0])
@@ -398,42 +400,159 @@ position_debut_robot=[]
 
 def heuristique(cellules):
     h=cellules.copy()
-    tmp_i=np.where(cellules==1)[0][0]
-    tmp_j=np.where(cellules==1)[1][0]
+    tmp_i=np.where(cellules==-1)[0][0]
+    tmp_j=np.where(cellules==-1)[1][0]
 
     for i in range (len(h)):
         for j in range(len(h)):
             if i!=tmp_i and j!= tmp_j:
                 h[i][j]=2
-
             else:
                 h[i][j]=1
-
         h[tmp_i][tmp_j]=0
 
     return h
 
-def successeurs(robot_pos,cellules):
-    return [move_down(robot_pos,cellules.copy()),move_up(robot_pos,cellules.copy()),move_left(robot_pos,cellules.copy()),move_right(robot_pos,cellules.copy())]
+def heuristique2(cellules,verticaux, horizontaux):
+    h=np.zeros((len(cellules),len(cellules)))
+    pos_initial=(np.where(cellules==1)[0][0],np.where(cellules==1)[1][0])
 
+    return h
+
+
+h=heuristique2(cellules,verticaux,horizontaux)
+print(h)
+
+
+
+def successeurs(ropot_pos, cellules):
+    return [move_down(ropot_pos,cellules.copy()),
+            move_up(ropot_pos,cellules.copy()),
+            move_left(ropot_pos,cellules.copy()),
+            move_right(ropot_pos,cellules.copy())]
+
+def multi_successuers(robots_pos, cellules):
+    res = []
+    for r in range(len(robots_pos)):
+        ucel = cellules.copy()
+        dcel = cellules.copy()
+        lcel = cellules.copy()
+        rcel = cellules.copy()
+
+        robot = robots_pos[r]
+
+        ulist = robots_pos.copy()
+        ulist[r] = move_up(robot, ucel)
+
+        dlist = robots_pos.copy()
+        dlist[r] = move_down(robot, dcel)
+
+        llist = robots_pos.copy()
+        llist[r] = move_left(robot, lcel)
+
+        rlist = robots_pos.copy()
+        rlist[r] = move_right(robot, rcel)
+
+        res.append(ulist)
+        res.append(dlist)
+        res.append(llist)
+        res.append(rlist)
+    
+    return res
+
+"""
 def recherche_A_etoile(robot_pos,cible_pos,cellules,h):
-    O=[robot_pos]
-    F=[]
-    choisi=robot_pos
-    n=0
-    while O!=[]:
-        n+=1
-        s=successeurs(choisi,cellules)
-        for i in s:
-            O.append(i)
-        O.remove(choisi)
-        F.append(choisi)
-        for o in O:
-            if o==cible_pos:
-                return n
-            else:
-                if h[o[0]][o[1]]<h[choisi[0]][choisi[1]]:
-                    choisi=o
+    
+    Ouvert=[(0,robot_pos)]
+    Fermer=[]
+    choisi=(0, robot_pos)
 
-a=recherche_A_etoile(position_robots[0],position_cible,cellules,heuristique(cellules))
-print(a)
+    while Ouvert!=[]:
+        s=successeurs(choisi,cellules)
+        Ouvert.remove(choisi)
+        Fermer.append(choisi)
+        for i in s:
+            if i==cible_pos:
+                return i[0]
+            else:
+                if i not in Fermer:
+                    Ouvert.append(i)
+
+        choisi=Ouvert[0]
+        
+        for o in Ouvert:
+            if (h[o[1][0]][o[1][1]] + o[0]) < (h[choisi[1][0]][choisi[1][1]] + choisi[0]):
+                choisi=o
+"""
+
+# a=recherche_A_etoile(position_robots[0],position_cible,cellules,heuristique(cellules))
+# print(a)
+
+
+def a_star_search_single(cellules, robot_pos, cible_pos, heuristique):
+
+    frontier = []
+    hq.heappush(frontier, (0, robot_pos))
+    came_from = {robot_pos: None}
+    cost_so_far = {robot_pos: 0}
+
+    while frontier:
+        current = hq.heappop(frontier)[1]
+
+        if current == cible_pos:
+            break
+
+        for next in successeurs(current, cellules):
+            new_cost = cost_so_far[current] + 1
+            if next not in cost_so_far or new_cost < cost_so_far[next]:
+                cost_so_far[next] = new_cost
+                priority = new_cost + heuristique[next[0]][next[1]]
+                hq.heappush(frontier, (priority, next))
+                came_from[next] = current
+
+    path = []
+    while current is not None:
+        path.append(current)
+        current = came_from[current]
+    path.reverse()
+
+    return path
+
+"""path = a_star_search_single(cellules, position_robots[0], position_cible, heuristique(cellules))
+print(path)
+print(len(path) - 1)"""
+
+def a_star_search_multi(cellules, robots_pos, cible_pos, heuristique):
+    
+    frontier = []
+    hq.heappush(frontier, (0, robots_pos))
+    came_from = {(0, robots_pos[0]): None}
+    cost_so_far = {(0, robots_pos[0]): 0}
+
+    while frontier:
+        current = hq.heappop(frontier)[1]
+
+        if current[0][1] == cible_pos:
+            break
+
+        for next in multi_successuers(current, cellules):
+            new_cost = cost_so_far[current] + 1
+            if next not in cost_so_far or new_cost < cost_so_far[next]:
+                cost_so_far[next] = new_cost
+                priority = new_cost + heuristique[next[0][0]][next[0][1]]
+                hq.heappush(frontier, (priority, next))
+                came_from[next] = current
+
+    path = []
+    while current is not None:
+        path.append(current)
+        current = came_from[current]
+    path.reverse()
+
+    return path
+
+"""path = a_star_search_multi(cellules, position_robots, position_cible, heuristique(cellules))
+print(path)
+print(len(path) - 1)"""
+
+showgrid(n,cellules,verticaux,horizontaux)
