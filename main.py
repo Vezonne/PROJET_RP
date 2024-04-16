@@ -511,6 +511,8 @@ def a_star_search_single(cellules, robot_pos, cible_pos, heuristique):
                 came_from[next] = current
 
     path = []
+    if current[0] != cible_pos:
+        return path
     while current is not None:
         path.append(current)
         current = came_from[current]
@@ -518,9 +520,9 @@ def a_star_search_single(cellules, robot_pos, cible_pos, heuristique):
 
     return path
 
-"""path = a_star_search_single(cellules, position_robots[0], position_cible, heuristique(cellules))
+path = a_star_search_single(cellules, position_robots[0], position_cible, heuristique(cellules))
 print(path)
-print(len(path) - 1)"""
+print(len(path) - 1)
 
 def a_star_search_multi(cellules, robots_pos, cible_pos, heuristique):
     
@@ -544,6 +546,8 @@ def a_star_search_multi(cellules, robots_pos, cible_pos, heuristique):
                 came_from[next] = current
 
     path = []
+    if current[0] != cible_pos:
+        return path
     while current is not None:
         path.append(current)
         current = came_from[current]
