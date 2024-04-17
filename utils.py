@@ -345,7 +345,7 @@ def multi_dive(cellules, verticaux, horizontaux, robots_pos, cible_pos, m=10, i=
         for side in ["UP", "DOWN", "LEFT", "RIGHT"]:
 
             cel_cp = cellules.copy()
-            new_pos = move_line(robots_pos[r], cel_cp, horizontaux, verticaux, side)
+            new_pos = move_line(robots_pos[r], cel_cp, verticaux, horizontaux, side)
             res.append(multi_dive(cel_cp, verticaux, horizontaux, [new_pos], cible_pos, m, i))
     
     return min(res)
