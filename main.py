@@ -417,6 +417,13 @@ def heuristique2(cellules,verticaux, horizontaux):
     h=np.zeros((len(cellules),len(cellules)))
     pos_initial=(np.where(cellules==1)[0][0],np.where(cellules==1)[1][0])
 
+    h[pos_initial[0]][pos_initial[1]]=0
+    a=move_down(pos_initial,cellules)
+    b=move_up(pos_initial,cellules)
+    c=move_left(pos_initial,cellules)
+    d=move_right(pos_initial,cellules)
+
+
     return h
 
 
