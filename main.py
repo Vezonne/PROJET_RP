@@ -4,14 +4,19 @@ from test import *
 
 def main(args=None):
 
+    file = "log.txt"
+
     n=10
     k=4
 
-    # cellules,verticaux,horizontaux=generateRandomInstances(n,k)
-    cellules,verticaux,horizontaux=np.asarray(test_cellules),np.asarray(test_verticaux),np.asarray(test_horizontaux)
-    n=8
-    k=3
+    cellules,verticaux,horizontaux=generateRandomInstances(n,k)
+    # cellules,verticaux,horizontaux=np.asarray(test_cellules),np.asarray(test_verticaux),np.asarray(test_horizontaux)
+    # n=8
+    # k=3
+    # n, k, cellules, verticaux, horizontaux = generate_instance(file)
     # showgrid(n,cellules,verticaux,horizontaux)
+
+    log_map(cellules,verticaux,horizontaux, file)
 
     position_cible = None
     position_robots = np.zeros(k, dtype=tuple)
@@ -32,8 +37,8 @@ def main(args=None):
     shortest_path = deep_dive(cellules, verticaux, horizontaux, position_robots[0], position_cible)
     print(shortest_path)
 
-    # shortest_path = multi_dive(cellules, verticaux, horizontaux, position_robots, position_cible, shortest_path)
-    # print(shortest_path)
+    shortest_path = multi_dive(cellules, verticaux, horizontaux, position_robots, position_cible, shortest_path)
+    print(shortest_path)
 
     h1=heuristic1(cellules)
     print(h1)
@@ -42,7 +47,11 @@ def main(args=None):
     print(path)
     print(len(path) - 1)
 
+    log_path(path, file)
+
     showgrid(n,cellules,verticaux,horizontaux)
+
+    file.close()
 
 if __name__ == '__main__':
     main()

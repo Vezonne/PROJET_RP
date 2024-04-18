@@ -521,3 +521,61 @@ def a_star_search(robot_pos, cible_pos, h, cellules, verticaux, horizontaux):
 
     return path
 
+def log_map(cellules, verticaux, horizontaux, f):
+    file = open(f, "w")
+
+    file.write("MAP\n")
+    file.write("cellules\n")
+    file.write(str(len(cellules)) + "\n")
+    file.write(str(len(cellules[0])) + "\n")
+    for i in range(len(cellules)):
+        for j in range(len(cellules[i])):
+            file.write(str(cellules[i][j]) + " ")
+        file.write("\n")
+    file.write("\nverticaux\n")
+    for i in range(len(verticaux)):
+        file.write(str(verticaux[i]) + " ")
+        file.write("\n")
+    file.write("\nhorizontaux\n")
+    for i in range(len(horizontaux)):
+            file.write(str(horizontaux[i]) + " ")
+            file.write("\n")
+    file.write("ENDMAP\n\n")
+
+def log_path(path, f):
+    file = open(f, "a")
+    file.write("PATH\n")
+    for i in range(len(path)):
+        file.write(str(path[i][0]) + " " + str(path[i][1]) + " ")
+    file.write("\n")
+    file.write("ENDPATH\n")
+
+def generate_instance(f):
+    file = open(f, "r")
+    file.readline()
+    file.readline()
+    n = int(file.readline())
+    k = int(file.readline())
+    cellules = []
+    verticaux = []
+    horizontaux = []
+    for i in range(n):
+        line = file.readline()
+        line = line.split(" ")
+        line = list(map(int, line))
+        cellules.append(line)
+    
+    file.readline()
+    for i in range(n):
+        line = file.readline()
+        line = line.split(" ")
+        line = list(map(int, line))
+        verticaux.append(line)
+
+    file.readline()
+    for i in range(n):
+        line = file.readline()
+        line = line.split(" ")
+        line = list(map(int, line))
+        horizontaux.append(line)
+    return n, k, cellules, verticaux, horizontaux
