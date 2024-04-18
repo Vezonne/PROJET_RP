@@ -28,30 +28,38 @@ def main(args=None):
             elif cellules[i][j]>0:
                 position_robots[cellules[i][j]-1] = (i,j)
 
-    print(position_robots)
-    print(position_cible)
+    print("\nPositions initial des robots:", position_robots)
+    print("Position de la cible:", position_cible)
 
     # position_robots[0] = move_line(position_robots[0], cellules, verticaux, horizontaux, "RIGHT")
     # showgrid(n,cellules,verticaux,horizontaux)
 
-    shortest_path = deep_dive(cellules, verticaux, horizontaux, position_robots[0], position_cible)
-    print(shortest_path)
+    shortest_path = deep_dive(cellules, verticaux, horizontaux, position_robots[0], position_cible, 15)
+    print("\nShortest path found with deep dive:", shortest_path)
 
-    shortest_path = multi_dive(cellules, verticaux, horizontaux, position_robots, position_cible, shortest_path)
-    print(shortest_path)
+    if shortest_path <= 5:
+        shortest_path = multi_dive(cellules, verticaux, horizontaux, position_robots, position_cible, shortest_path)
+        print("Shortest path found with multi dive:", shortest_path)
 
     h1=heuristic1(cellules)
+    print("\nh1:")
     print(h1)
 
+    h2 = heuristic2(cellules, verticaux, horizontaux)
+    print("\nh2:")
+    print(h2)
+
     path = a_star_search(position_robots[0], position_cible, 1, cellules, verticaux, horizontaux)
-    print(path)
-    print(len(path) - 1)
+    print("\nPath found with A* and h1:", path)
+    print("size:", len(path) - 1)
+
+    path = a_star_search(position_robots[0], position_cible, 2, cellules, verticaux, horizontaux)
+    print("\nPath found with A* and h2:", path)
+    print("size:", len(path) - 1)
 
     log_path(path, file)
 
     showgrid(n,cellules,verticaux,horizontaux)
-
-    file.close()
 
 if __name__ == '__main__':
     main()
