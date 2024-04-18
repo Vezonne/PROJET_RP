@@ -352,70 +352,6 @@ def multi_dive(cellules, verticaux, horizontaux, robots_pos, cible_pos, m=10, i=
 
 #------ A* ------#
 
-def heuristic(cellules, verticaux, horizontaux, h):
-    match h:
-        case 1:
-            return heuristic1(cellules)
-        case 2:
-            return heuristic2(cellules, verticaux, horizontaux)
-
-def heuristic1(cellules):
-    """
-    Calcule l'heuristique pour chaque cellule dans une grille.
-
-    Args:
-        cellules (numpy.ndarray): La grille de cellules.
-
-    Returns:
-        numpy.ndarray: La grille de cellules avec les valeurs de l'heuristique calculées.
-    """
-
-    h = cellules.copy()
-    tmp_i = np.where(cellules == -1)[0][0]
-    tmp_j = np.where(cellules == -1)[1][0]
-
-    for i in range(len(h)):
-        for j in range(len(h)):
-            if i != tmp_i and j != tmp_j:
-                h[i][j] = 2
-            else:
-                h[i][j] = 1
-        h[tmp_i][tmp_j] = 0
-
-    return h
-
-def heuristic2(cellules,verticaux, horizontaux):
-
-    evalH2 = np.zeros((len(cellules), len(cellules)))
-    position = np.where(cellules == 1)
-    copCellules = np.copy(cellules)
-    n = len(cellules)
-    r = 1
-
-    i = 0
-
-    evalH2 = explore_hautH2(n, r, position[0][0], position[1][0], copCellules, verticaux, horizontaux, evalH2, i)
-    evalH2 = explore_basH2(n, r, position[0][0], position[1][0], copCellules, verticaux, horizontaux, evalH2, i)
-    evalH2 = explore_gaucheH2(n, r, position[0][0], position[1][0], copCellules, verticaux, horizontaux, evalH2, i)
-    evalH2 = explore_droiteH2(n, r, position[0][0], position[1][0], copCellules, verticaux, horizontaux, evalH2, i)
-
-    while i<10:
-        i+=1
-
-        dev = np.where(evalH2 == i)
-
-        for pos_x, pos_y in zip(dev[0], dev[1]):
-            evalH2 = explore_hautH2(n, r, pos_x, pos_y, copCellules, verticaux, horizontaux, evalH2, i)
-            evalH2 = explore_basH2(n, r, pos_x, pos_y, copCellules, verticaux, horizontaux, evalH2, i)
-            evalH2 = explore_gaucheH2(n, r, pos_x, pos_y, copCellules, verticaux, horizontaux, evalH2, i)
-            evalH2 = explore_droiteH2(n, r, pos_x, pos_y, copCellules, verticaux, horizontaux, evalH2, i)
-            
-
-    evalH2[position[0][0]][position[1][0]] = 0
-    
-
-    return evalH2
-
 def successors(robot_pos, cellules, verticaux, horizontaux, h):
 
     match h:
@@ -479,7 +415,7 @@ def successors_h2(robot_pos, cellules, verticaux, horizontaux):
         has_moved = True
 
         while has_moved:
-            new_pos = move_one(robot_pos, cel_cp, horizontaux, verticaux, side, ignore_bots=True)
+            new_pos = move_one(pos, cel_cp, verticaux, horizontaux, side, ignore_bots=True)
             if new_pos == pos:
                 has_moved = False
             else:
@@ -487,6 +423,100 @@ def successors_h2(robot_pos, cellules, verticaux, horizontaux):
                 res.append(new_pos)
 
     return res
+
+def heuristic(cellules, verticaux, horizontaux, h):
+    match h:
+        case 1:
+            return heuristic1(cellules)
+        case 2:
+            return heuristic2(cellules, verticaux, horizontaux)
+
+def heuristic1(cellules):
+    """
+    Calcule l'heuristique pour chaque cellule dans une grille.
+
+    Args:
+        cellules (numpy.ndarray): La grille de cellules.
+
+    Returns:
+        numpy.ndarray: La grille de cellules avec les valeurs de l'heuristique calculées.
+    """
+
+    h = cellules.copy()
+    tmp_i = np.where(cellules == -1)[0][0]
+    tmp_j = np.where(cellules == -1)[1][0]
+
+    for i in range(len(h)):
+        for j in range(len(h)):
+            if i != tmp_i and j != tmp_j:
+                h[i][j] = 2
+            else:
+                h[i][j] = 1
+        h[tmp_i][tmp_j] = 0
+
+    return h
+
+def heuristic2(cellules, verticaux, horizontaux):
+    
+    h = cellules.copy()
+    h.fill(len(h)^2)
+    start_x = np.where(cellules == 1)[0][0]
+    start_y = np.where(cellules == 1)[1][0]
+    h[start_x, start_y] = 0
+    q = [(start_x, start_y)]
+    i = 0
+    done = False
+
+    while not done:
+        nexts = []
+        i += 1
+
+        for step in q:
+            nexts = nexts + successors_h2(step, cellules, verticaux, horizontaux)
+
+        q.clear()
+        done = True
+
+        for next in nexts:
+            x, y = next
+            if h[x][y] > i:
+                q.append(next)
+                h[x][y] = i
+                done = False
+    
+    return h
+
+def heuristic2_old(cellules,verticaux, horizontaux):
+
+    evalH2 = np.zeros((len(cellules), len(cellules)))
+    position = np.where(cellules == 1)
+    copCellules = np.copy(cellules)
+    n = len(cellules)
+    r = 1
+
+    i = 0
+
+    evalH2 = explore_hautH2(n, r, position[0][0], position[1][0], copCellules, verticaux, horizontaux, evalH2, i)
+    evalH2 = explore_basH2(n, r, position[0][0], position[1][0], copCellules, verticaux, horizontaux, evalH2, i)
+    evalH2 = explore_gaucheH2(n, r, position[0][0], position[1][0], copCellules, verticaux, horizontaux, evalH2, i)
+    evalH2 = explore_droiteH2(n, r, position[0][0], position[1][0], copCellules, verticaux, horizontaux, evalH2, i)
+
+    while i<10:
+        i+=1
+
+        dev = np.where(evalH2 == i)
+
+        for pos_x, pos_y in zip(dev[0], dev[1]):
+            evalH2 = explore_hautH2(n, r, pos_x, pos_y, copCellules, verticaux, horizontaux, evalH2, i)
+            evalH2 = explore_basH2(n, r, pos_x, pos_y, copCellules, verticaux, horizontaux, evalH2, i)
+            evalH2 = explore_gaucheH2(n, r, pos_x, pos_y, copCellules, verticaux, horizontaux, evalH2, i)
+            evalH2 = explore_droiteH2(n, r, pos_x, pos_y, copCellules, verticaux, horizontaux, evalH2, i)
+            
+
+    evalH2[position[0][0]][position[1][0]] = 0
+    
+
+    return evalH2
 
 def a_star_search(robot_pos, cible_pos, h, cellules, verticaux, horizontaux):
     
@@ -523,7 +553,6 @@ def a_star_search(robot_pos, cible_pos, h, cellules, verticaux, horizontaux):
 
 def log_map(cellules, verticaux, horizontaux, f):
     file = open(f, "w")
-
     file.write("MAP\n")
     file.write("cellules\n")
     file.write(str(len(cellules)) + "\n")
@@ -541,6 +570,7 @@ def log_map(cellules, verticaux, horizontaux, f):
             file.write(str(horizontaux[i]) + " ")
             file.write("\n")
     file.write("ENDMAP\n\n")
+    file.close()
 
 def log_path(path, f):
     file = open(f, "a")
@@ -549,6 +579,7 @@ def log_path(path, f):
         file.write(str(path[i][0]) + " " + str(path[i][1]) + " ")
     file.write("\n")
     file.write("ENDPATH\n")
+    file.close()
 
 def generate_instance(f):
     file = open(f, "r")
@@ -578,4 +609,6 @@ def generate_instance(f):
         line = line.split(" ")
         line = list(map(int, line))
         horizontaux.append(line)
+
+    file.close()
     return n, k, cellules, verticaux, horizontaux
