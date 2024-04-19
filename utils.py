@@ -394,11 +394,13 @@ def multi_successors_h1(robots_pos, cellules, verticaux, horizontaux):
 
     res = []
     for r in range(len(robots_pos)):
+        res_r = []
         for side in ["UP", "DOWN", "LEFT", "RIGHT"]:
             cel_cp = cellules.copy()
             new_pos = move_line(robots_pos[r], cel_cp, verticaux, horizontaux, side)
-            res.append((new_pos, r))
-    print("multi succ", res)
+            res_r.append(new_pos)
+        res.append(res_r)
+    # print("multi succ", res)
     return res
 
 def successors_h2(robot_pos, cellules, verticaux, horizontaux):
@@ -534,7 +536,7 @@ def heuristic2_old(cellules,verticaux, horizontaux):
 
     return evalH2
 
-def a_star_search(robot_pos, cible_pos, h, cellules, verticaux, horizontaux):
+def a_star_search_old(robot_pos, cible_pos, h, cellules, verticaux, horizontaux):
     """
     Effectue une recherche A* pour trouver le chemin le plus court entre la position du robot et la position cible.
 
@@ -582,20 +584,34 @@ def a_star_search(robot_pos, cible_pos, h, cellules, verticaux, horizontaux):
 
     return path
 
-def a_star_search_cody(position_robots, position_cible, heuristic, cellules, verticaux, horizontaux):
+class Node:
+    def __init__(self, position, parent=None):
+        self.position = position
+        self.parent = parent
+        self.g = 0
+        self.h = 0
+        self.f = 0
 
-    class Node:
-        def __init__(self, position, parent=None):
-            self.position = position
-            self.parent = parent
-            self.g = 0
-            self.h = 0
-            self.f = 0
+def a_star_search(position_robot, position_cible, h, cellules, verticaux, horizontaux):
+    """
+    Effectue une recherche A* pour trouver le chemin optimal entre la position du robot et la position cible.
+
+    Args:
+        position_robot (tuple): La position initiale du robot.
+        position_cible (tuple): La position cible à atteindre.
+        h (list): La matrice des heuristiques.
+        cellules (list): La liste des cellules du labyrinthe.
+        verticaux (list): La liste des murs verticaux du labyrinthe.
+        horizontaux (list): La liste des murs horizontaux du labyrinthe.
+
+    Returns:
+        list: Le chemin optimal sous forme d'une liste de positions.
+    """
 
     open_list = [] 
     closed_list = []
 
-    start_node = Node(position_robots[0], None)  
+    start_node = Node(position_robot, None)  
     open_list.append(start_node)
 
     while open_list:
@@ -618,86 +634,97 @@ def a_star_search_cody(position_robots, position_cible, heuristic, cellules, ver
                 current = current.parent
             return path[::-1]
 
-        children = []
+        # children = []
         
-        # Seul le premier robot bouge
-        new_position = move_line(current_node.position, cellules, verticaux, horizontaux, "UP")
-        children.append(Node(new_position, current_node))
+        # # Seul le premier robot bouge
+        # new_position = move_line(current_node.position, cellules, verticaux, horizontaux, "UP")
+        # children.append(Node(new_position, current_node))
 
-        new_position = move_line(current_node.position, cellules, verticaux, horizontaux, "DOWN")
-        children.append(Node(new_position, current_node))
+        # new_position = move_line(current_node.position, cellules, verticaux, horizontaux, "DOWN")
+        # children.append(Node(new_position, current_node))
 
-        new_position = move_line(current_node.position, cellules, verticaux, horizontaux, "LEFT")
-        children.append(Node(new_position, current_node))
+        # new_position = move_line(current_node.position, cellules, verticaux, horizontaux, "LEFT")
+        # children.append(Node(new_position, current_node))
 
-        new_position = move_line(current_node.position, cellules, verticaux, horizontaux, "RIGHT")
-        children.append(Node(new_position, current_node))
+        # new_position = move_line(current_node.position, cellules, verticaux, horizontaux, "RIGHT")
+        # children.append(Node(new_position, current_node))
+        
+        children = [Node(new_position, current_node) for new_position in successors(current_node.position, cellules, verticaux, horizontaux, h)]
 
-    for child in children:
-            if len([closed_child for closed_child in closed_list if closed_child == child]) > 0:
-                continue
+        for child in children:
+                if len([closed_child for closed_child in closed_list if closed_child == child]) > 0:
+                    continue
 
-            child.g = current_node.g + 1
-            child.h = heuristic(child.position[0], position_cible, cellules)
-            child.f = child.g + child.h
+                child.g = current_node.g + 1
+                child.h = heuristic(cellules, verticaux, horizontaux, h)[child.position[0]][child.position[1]]
+                child.f = child.g + child.h
 
-            if len([open_node for open_node in open_list if child == open_node and child.g > open_node.g]) > 0:
-                continue
+                if len([open_node for open_node in open_list if child == open_node and child.g > open_node.g]) > 0:
+                    continue
 
-            open_list.append(child)
+                open_list.append(child)
 
-# def a_star_multi_robot(robots_pos, cible_pos, h, cellules, verticaux, horizontaux):
+def a_star_multi_robot_old(robots_pos, cible_pos, h, cellules, verticaux, horizontaux):
+    """
+    NOT WORKING
+    """
 
-#     heuristique = heuristic(cellules, verticaux, horizontaux, h)
+    heuristique = heuristic(cellules, verticaux, horizontaux, h)
 
-#     current_pos = robots_pos.copy()
-#     # for i in range(len(robots_pos)):
-#     #     current_pos.append(((robots_pos[i][0], robots_pos[i][1]), i))
+    current_pos = robots_pos.copy()
+    # for i in range(len(robots_pos)):
+    #     current_pos.append(((robots_pos[i][0], robots_pos[i][1]), i))
 
-#     frontier = []
-#     hq.heappush(frontier, (0, (robots_pos[0], 0)))
-#     came_from = {(robots_pos[0], 0): None}
-#     cost_so_far = {(robots_pos[0], 0): 0}
+    frontier = []
+    hq.heappush(frontier, (0, (robots_pos[0], 0)))
+    came_from = {(robots_pos[0], 0): None}
+    cost_so_far = {(robots_pos[0], 0): 0}
 
-#     while frontier:
-#         current = hq.heappop(frontier)[1]
-#         # current_pos[current[1]] = current[0]
+    while frontier:
+        current = hq.heappop(frontier)[1]
+        # current_pos[current[1]] = current[0]
 
-#         if current == (cible_pos, 0):
-#             break
+        if current == (cible_pos, 0):
+            break
 
-#         for next in multi_successors(current_pos, cellules, verticaux, horizontaux, h):
-#             new_cost = cost_so_far[current] + 1
-#             if next not in cost_so_far or new_cost < cost_so_far[next]:
-#                 cost_so_far[next] = new_cost
-#                 if next[1] == 0:
-#                     priority = new_cost + heuristique[next[0][0]][next[0][1]]
-#                 else:
-#                     priority = new_cost + heuristique[current_pos[0][0]][current_pos[0][1]]
-#                 hq.heappush(frontier, (priority, next))
-#                 came_from[next] = current
-#                 current_pos[next[1]] = next[0]
+        for next in multi_successors(current_pos, cellules, verticaux, horizontaux, h):
+            new_cost = cost_so_far[current] + 1
+            if next not in cost_so_far or new_cost < cost_so_far[next]:
+                cost_so_far[next] = new_cost
+                if next[1] == 0:
+                    priority = new_cost + heuristique[next[0][0]][next[0][1]]
+                else:
+                    priority = new_cost + heuristique[current_pos[0][0]][current_pos[0][1]]
+                hq.heappush(frontier, (priority, next))
+                came_from[next] = current
+                current_pos[next[1]] = next[0]
 
-#     path = []
-#     while current is not None:
-#         path.append(current)
-#         current = came_from[current]
-#     path.reverse()
+    path = []
+    while current is not None:
+        path.append(current)
+        current = came_from[current]
+    path.reverse()
 
-#     # if path[-1] != cible_pos:
-#     #      return []
+    # if path[-1] != cible_pos:
+    #      return []
 
-#     return path
+    return path
 
 def a_star_multi_robot(robots_pos, cible_pos, h, cellules, verticaux, horizontaux):
+    """
+    Effectue une recherche A* pour trouver le chemin optimal pour plusieurs robots vers une cible.
 
-    class Node:
-        def __init__(self, position, parent=None):
-            self.position = position
-            self.parent = parent
-            self.g = 0
-            self.h = 0
-            self.f = 0
+    Args:
+        robots_pos (tuple): Les positions initiales des robots.
+        cible_pos (int): La position cible.
+        h (list): La fonction heuristique pour chaque cellule.
+        cellules (list): Les cellules du plateau.
+        verticaux (list): Les murs verticaux du plateau.
+        horizontaux (list): Les murs horizontaux du plateau.
+
+    Returns:
+        list: Le chemin optimal pour les robots vers la cible.
+    """
 
     open_list = []
     closed_list = []
@@ -725,31 +752,33 @@ def a_star_multi_robot(robots_pos, cible_pos, h, cellules, verticaux, horizontau
                 current = current.parent
             return path[::-1] 
 
-        children = []
-        for i in range(len(robots_pos)): # boucle sur les robots
-            # génération des positions enfants
-            new_position = list(current_node.position) 
-            new_position[i] = move_line(new_position[i], cellules, verticaux, horizontaux, "UP")
-            children.append(Node(tuple(new_position), current_node))
+        # children = []
+        # for i in range(len(robots_pos)): # boucle sur les robots
+        #     # génération des positions enfants
+        #     new_position = list(current_node.position) 
+        #     new_position[i] = move_line(new_position[i], cellules, verticaux, horizontaux, "UP")
+        #     children.append(Node(tuple(new_position), current_node))
 
-            new_position = list(current_node.position)
-            new_position[i] = move_line(new_position[i], cellules, verticaux, horizontaux, "DOWN")
-            children.append(Node(tuple(new_position), current_node))
+        #     new_position = list(current_node.position)
+        #     new_position[i] = move_line(new_position[i], cellules, verticaux, horizontaux, "DOWN")
+        #     children.append(Node(tuple(new_position), current_node))
 
-            new_position = list(current_node.position)
-            new_position[i] = move_line(new_position[i], cellules, verticaux, horizontaux, "LEFT")
-            children.append(Node(tuple(new_position), current_node))
+        #     new_position = list(current_node.position)
+        #     new_position[i] = move_line(new_position[i], cellules, verticaux, horizontaux, "LEFT")
+        #     children.append(Node(tuple(new_position), current_node))
 
-            new_position = list(current_node.position)
-            new_position[i] = move_line(new_position[i], cellules, verticaux, horizontaux, "RIGHT")
-            children.append(Node(tuple(new_position), current_node))
+        #     new_position = list(current_node.position)
+        #     new_position[i] = move_line(new_position[i], cellules, verticaux, horizontaux, "RIGHT")
+        #     children.append(Node(tuple(new_position), current_node))
+
+        children = [Node(tuple(new_position), current_node) for new_position in multi_successors(current_node.position, cellules, verticaux, horizontaux, h)]
             
         for child in children:
             if len([closed_child for closed_child in closed_list if closed_child == child]) > 0:
                 continue
 
             child.g = current_node.g + 1
-            child.h = heuristic(cellules,  verticaux, horizontaux, h)[child.position[0]]
+            child.h = heuristic(cellules,  verticaux, horizontaux, h)[child.position[0][0]][child.position[0][1]]
             child.f = child.g + child.h
 
             if len([open_node for open_node in open_list if child == open_node and child.g > open_node.g]) > 0:
