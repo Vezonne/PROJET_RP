@@ -9,11 +9,11 @@ def main(args=None):
     n=10
     k=4
 
-    cellules,verticaux,horizontaux=generateRandomInstances(n,k)
-    # cellules,verticaux,horizontaux=np.asarray(test_cellules),np.asarray(test_verticaux),np.asarray(test_horizontaux)
-    # n=8
-    # k=3
-    # n, k, cellules, verticaux, horizontaux = generate_instance(file)
+    # cellules,verticaux,horizontaux=generateRandomInstances(n,k)
+    cellules,verticaux,horizontaux=np.asarray(test_cellules),np.asarray(test_verticaux),np.asarray(test_horizontaux)
+    n=8
+    k=3
+    # n, k, cellules, verticaux, horizontaux = generate_log_instance(file)
     # showgrid(n,cellules,verticaux,horizontaux)
 
     log_map(cellules,verticaux,horizontaux, file)
@@ -49,7 +49,7 @@ def main(args=None):
     print("\nh2:")
     print(h2)
 
-    path = a_star_search(position_robots[0], position_cible, 1, cellules, verticaux, horizontaux)
+    path = a_star_search_cody(position_robots[0], position_cible, 1, cellules, verticaux, horizontaux)
     print("\nPath found with A* and h1:", path)
     print("size:", len(path) - 1)
 
@@ -58,6 +58,10 @@ def main(args=None):
     print("size:", len(path) - 1)
 
     log_path(path, file)
+
+    path = a_star_multi_robot(position_robots, position_cible, 1, cellules, verticaux, horizontaux)
+    print("\nPath found with multi A* and h1:", path)
+    print("size:", len(path) - 1)
 
     showgrid(n,cellules,verticaux,horizontaux)
 
