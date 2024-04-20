@@ -486,7 +486,7 @@ def heuristic2(cellules, verticaux, horizontaux):
     
     return h
 
-def heuristic2_old(cellules,verticaux, horizontaux):
+"""def heuristic2_old(cellules,verticaux, horizontaux):
 
     evalH2 = np.zeros((len(cellules), len(cellules)))
     position = np.where(cellules == 1)
@@ -516,7 +516,7 @@ def heuristic2_old(cellules,verticaux, horizontaux):
     evalH2[position[0][0]][position[1][0]] = 0
     
 
-    return evalH2
+    return evalH2"""
 
 def a_star_search(robot_pos, cible_pos, h, cellules, verticaux, horizontaux):
     
