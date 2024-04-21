@@ -49,13 +49,13 @@ def main(args=None):
     print("\nh2:")
     print(h2)
 
-    path = a_star_search_cody(position_robots[0], position_cible, 1, cellules, verticaux, horizontaux)
+    path = a_star_search(position_robots[0], position_cible, 1, cellules, verticaux, horizontaux)
     print("\nPath found with A* and h1:", path)
     print("size:", len(path) - 1)
 
-    path = a_star_search(position_robots[0], position_cible, 2, cellules, verticaux, horizontaux)
-    print("\nPath found with A* and h2:", path)
-    print("size:", len(path) - 1)
+    # path = a_star_search(position_robots[0], position_cible, 2, cellules, verticaux, horizontaux)
+    # print("\nPath found with A* and h2:", path)
+    # print("size:", len(path) - 1)
 
     log_path(path, file)
 

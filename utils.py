@@ -740,6 +740,8 @@ def a_star_multi_robot(robots_pos, cible_pos, h, cellules, verticaux, horizontau
             if item.f < current_node.f:
                 current_node = item
                 current_index = index
+        
+        print(current_node.position[0])
                 
         open_list.pop(current_index)
         closed_list.append(current_node)
