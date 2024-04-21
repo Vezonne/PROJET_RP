@@ -259,7 +259,7 @@ def move_line(robot_pos, cellules, verticaux, horizontaux, side):
 
 #------ RECHERCHE EN PROFONDEUR ------#
 
-def deep_dive(cellules, verticaux, horizontaux, robot_pos, cible_pos, m=10, i=0, d=0):
+def deep_dive(cellules, verticaux, horizontaux, robot_pos, cible_pos, up_bound=10, i=0, d=0):
     """
     Cette fonction utilise une recherche en profondeur pour trouver le chemin le plus court vers une cible.
 
@@ -280,8 +280,8 @@ def deep_dive(cellules, verticaux, horizontaux, robot_pos, cible_pos, m=10, i=0,
     if robot_pos == cible_pos:
         return i
         
-    if i == m:
-        return m+1
+    if i == up_bound:
+        return up_bound+1
     
     i += 1
     res = []
@@ -293,7 +293,7 @@ def deep_dive(cellules, verticaux, horizontaux, robot_pos, cible_pos, m=10, i=0,
                 
                 cel_cp = cellules.copy()
                 new_pos = move_line(robot_pos, cel_cp, verticaux, horizontaux, side)
-                res.append(deep_dive(cel_cp, verticaux, horizontaux, new_pos, cible_pos, m, i, 1 if side in ["LEFT", "RIGHT"] else 2))
+                res.append(deep_dive(cel_cp, verticaux, horizontaux, new_pos, cible_pos, up_bound, i, 1 if side in ["LEFT", "RIGHT"] else 2))
 
         case 1: #up or down
             
@@ -301,7 +301,7 @@ def deep_dive(cellules, verticaux, horizontaux, robot_pos, cible_pos, m=10, i=0,
 
                 cel_cp = cellules.copy()
                 new_pos = move_line(robot_pos, cel_cp, verticaux, horizontaux, side)
-                res.append(deep_dive(cel_cp, verticaux, horizontaux, new_pos, cible_pos, m, i, 2))
+                res.append(deep_dive(cel_cp, verticaux, horizontaux, new_pos, cible_pos, up_bound, i, 2))
 
         case 2: #left or right
             
@@ -309,11 +309,11 @@ def deep_dive(cellules, verticaux, horizontaux, robot_pos, cible_pos, m=10, i=0,
                 
                 cel_cp = cellules.copy()
                 new_pos = move_line(robot_pos, cel_cp, verticaux, horizontaux, side)
-                res.append(deep_dive(cel_cp, verticaux, horizontaux, new_pos, cible_pos, m, i, 1))
+                res.append(deep_dive(cel_cp, verticaux, horizontaux, new_pos, cible_pos, up_bound, i, 1))
 
     return min(res)
         
-def multi_dive(cellules, verticaux, horizontaux, robots_pos, cible_pos, m=10, i=0):
+def multi_dive(cellules, verticaux, horizontaux, robots_pos, cible_pos, up_bound=10, i=0):
     """
     Fonction récursive qui effectue une recherche multi-profondeur pour trouver le nombre minimum de mouvements nécessaires pour que les robots atteignent la position cible.
 
@@ -333,8 +333,8 @@ def multi_dive(cellules, verticaux, horizontaux, robots_pos, cible_pos, m=10, i=
     if robots_pos[0] == cible_pos:
         return i
     
-    if i == m:
-        return m+1
+    if i == up_bound:
+        return up_bound+1
     
     i += 1
 
@@ -345,8 +345,10 @@ def multi_dive(cellules, verticaux, horizontaux, robots_pos, cible_pos, m=10, i=
         for side in ["UP", "DOWN", "LEFT", "RIGHT"]:
 
             cel_cp = cellules.copy()
-            new_pos = move_line(robots_pos[r], cel_cp, verticaux, horizontaux, side)
-            res.append(multi_dive(cel_cp, verticaux, horizontaux, [new_pos], cible_pos, m, i))
+            pos_cp = robots_pos.copy()
+            new_pos = move_line(pos_cp[r], cel_cp, verticaux, horizontaux, side)
+            pos_cp[r] = new_pos
+            res.append(multi_dive(cel_cp, verticaux, horizontaux, pos_cp, cible_pos, up_bound, i))
     
     return min(res)
 
@@ -366,46 +368,11 @@ def multi_successors(robots_pos, cellules, verticaux, horizontaux, h):
         case 1:
             return multi_successors_h1(robots_pos, cellules, verticaux, horizontaux)
         case 2:
-            return multi_successors_h2(robots_pos, cellules, verticaux, horizontaux)
+            return Exception("Not implemented")
 
 def successors_h1(robot_pos, cellules, verticaux, horizontaux):
     """
-    Retourne une liste des positions successeurs possibles à partir de la position actuelle du robot.
-
-    Args:
-        ropot_pos (tuple): La position actuelle du robot.
-        cellules (list): La liste des cellules du plateau.
-        verticaux (list): La liste des murs verticaux du plateau.
-        horizontaux (list): La liste des murs horizontaux du plateau.
-
-    Returns:
-        list: Une liste des positions successeurs possibles.
-    """
-
-    res = []
-    for side in ["UP", "DOWN", "LEFT", "RIGHT"]:
-        cel_cp = cellules.copy()
-        new_pos = move_line(robot_pos, cel_cp, verticaux, horizontaux, side)
-        res.append(new_pos)
-
-    return res
-
-def multi_successors_h1(robots_pos, cellules, verticaux, horizontaux):
-
-    res = []
-    for r in range(len(robots_pos)):
-        res_r = []
-        for side in ["UP", "DOWN", "LEFT", "RIGHT"]:
-            cel_cp = cellules.copy()
-            new_pos = move_line(robots_pos[r], cel_cp, verticaux, horizontaux, side)
-            res_r.append(new_pos)
-        res.append(res_r)
-    # print("multi succ", res)
-    return res
-
-def successors_h2(robot_pos, cellules, verticaux, horizontaux):
-    """
-    Génère les successeurs de la position du robot pour l'heuristique 2.
+    Génère les successeurs de l'état actuel en utilisant la heuristique h1.
 
     Args:
         robot_pos (tuple): La position actuelle du robot.
@@ -414,7 +381,54 @@ def successors_h2(robot_pos, cellules, verticaux, horizontaux):
         horizontaux (list): La liste des murs horizontaux du labyrinthe.
 
     Returns:
-        list: Une liste des positions successeurs du robot.
+        list: Une liste de tuples contenant les positions des successeurs et les nouvelles configurations des cellules.
+    """
+
+    res = []
+    for side in ["UP", "DOWN", "LEFT", "RIGHT"]:
+        cel_cp = cellules.copy()
+        new_pos = move_line(robot_pos, cel_cp, verticaux, horizontaux, side)
+        res.append((new_pos, cel_cp))
+
+    return res
+
+def multi_successors_h1(robots_pos, cellules, verticaux, horizontaux):
+    """
+    Génère les successeurs de l'état actuel en effectuant une seule action pour chaque robot.
+    
+    Args:
+        robots_pos (list): La liste des positions des robots.
+        cellules (list): La liste des cellules du plateau de jeu.
+        verticaux (list): La liste des positions verticales des murs.
+        horizontaux (list): La liste des positions horizontales des murs.
+    
+    Returns:
+        list: Une liste de tuples contenant les positions et les cellules après chaque action.
+    """
+
+    res = []
+    for r in range(len(robots_pos)):
+        for side in ["UP", "DOWN", "LEFT", "RIGHT"]:
+            cel_cp = cellules.copy()
+            pos_cp = robots_pos.copy()
+            new_pos = move_line(pos_cp[r], cel_cp, verticaux, horizontaux, side)
+            pos_cp[r] = new_pos
+            res.append((pos_cp, cel_cp))
+
+    return res
+
+def successors_h2(robot_pos, cellules, verticaux, horizontaux):
+    """
+    Génère les successeurs de l'état actuel en utilisant la heuristique 2.
+
+    Args:
+        robot_pos (tuple): La position actuelle du robot.
+        cellules (list): La liste des cellules du plateau.
+        verticaux (list): La liste des murs verticaux du plateau.
+        horizontaux (list): La liste des murs horizontaux du plateau.
+
+    Returns:
+        list: Une liste de tuples contenant les positions et les cellules après chaque mouvement possible.
     """
 
     res = []
@@ -428,7 +442,7 @@ def successors_h2(robot_pos, cellules, verticaux, horizontaux):
                 has_moved = False
             else:
                 pos = new_pos
-                res.append(new_pos)
+                res.append((new_pos, cel_cp))
     return res
 
 def heuristic(cellules, verticaux, horizontaux, h):
@@ -490,7 +504,7 @@ def heuristic2(cellules, verticaux, horizontaux):
         i += 1
 
         for step in q:
-            nexts = nexts + successors_h2(step, cellules, verticaux, horizontaux)
+            nexts = nexts + [new_pos for new_pos, _ in successors_h2(step, cellules, verticaux, horizontaux)]
 
         q.clear()
         done = True
@@ -585,12 +599,19 @@ def a_star_search_old(robot_pos, cible_pos, h, cellules, verticaux, horizontaux)
     return path
 
 class Node:
-    def __init__(self, position, parent=None):
+    def __init__(self, position, parent=None, cellule=None):
         self.position = position
         self.parent = parent
+        self.cellule = cellule
         self.g = 0
         self.h = 0
         self.f = 0
+
+    def __str__(self):
+        if self.parent == None:
+            return str(self.position) + "" + str(self.g) + " " + str(self.h) + " " + str(self.f)
+
+        return str(self.position) + " " + str(self.parent.position) + "" + str(self.g) + " " + str(self.h) + " " + str(self.f)
 
 def a_star_search(position_robot, position_cible, h, cellules, verticaux, horizontaux):
     """
@@ -611,10 +632,12 @@ def a_star_search(position_robot, position_cible, h, cellules, verticaux, horizo
     open_list = [] 
     closed_list = []
 
-    start_node = Node(position_robot, None)  
+    start_node = Node(position_robot, None, cellules)  
     open_list.append(start_node)
 
     while open_list:
+
+        # print("open_list : ", len(open_list))
 
         current_node = open_list[0]
         current_index = 0
@@ -626,6 +649,8 @@ def a_star_search(position_robot, position_cible, h, cellules, verticaux, horizo
         open_list.pop(current_index)
         closed_list.append(current_node)
 
+        # print("current_node : ", current_node)
+
         if current_node.position == position_cible:
             path = []
             current = current_node
@@ -633,23 +658,8 @@ def a_star_search(position_robot, position_cible, h, cellules, verticaux, horizo
                 path.append(current.position)
                 current = current.parent
             return path[::-1]
-
-        # children = []
         
-        # # Seul le premier robot bouge
-        # new_position = move_line(current_node.position, cellules, verticaux, horizontaux, "UP")
-        # children.append(Node(new_position, current_node))
-
-        # new_position = move_line(current_node.position, cellules, verticaux, horizontaux, "DOWN")
-        # children.append(Node(new_position, current_node))
-
-        # new_position = move_line(current_node.position, cellules, verticaux, horizontaux, "LEFT")
-        # children.append(Node(new_position, current_node))
-
-        # new_position = move_line(current_node.position, cellules, verticaux, horizontaux, "RIGHT")
-        # children.append(Node(new_position, current_node))
-        
-        children = [Node(new_position, current_node) for new_position in successors(current_node.position, cellules, verticaux, horizontaux, h)]
+        children = [Node(new_position, current_node, new_cel) for new_position, new_cel in successors(current_node.position, current_node.cellule, verticaux, horizontaux, h)]
 
         for child in children:
                 if len([closed_child for closed_child in closed_list if closed_child == child]) > 0:
@@ -665,9 +675,7 @@ def a_star_search(position_robot, position_cible, h, cellules, verticaux, horizo
                 open_list.append(child)
 
 def a_star_multi_robot_old(robots_pos, cible_pos, h, cellules, verticaux, horizontaux):
-    """
-    NOT WORKING
-    """
+    # NOT WORKING
 
     heuristique = heuristic(cellules, verticaux, horizontaux, h)
 
@@ -710,7 +718,7 @@ def a_star_multi_robot_old(robots_pos, cible_pos, h, cellules, verticaux, horizo
 
     return path
 
-def a_star_multi_robot(robots_pos, cible_pos, h, cellules, verticaux, horizontaux):
+def a_star_multi_robot(robots_pos, cible_pos, h, cellules, verticaux, horizontaux, up_bound=None):
     """
     Effectue une recherche A* pour trouver le chemin optimal pour plusieurs robots vers une cible.
 
@@ -729,7 +737,7 @@ def a_star_multi_robot(robots_pos, cible_pos, h, cellules, verticaux, horizontau
     open_list = []
     closed_list = []
 
-    start_node = Node(robots_pos, None)
+    start_node = Node(robots_pos, None, cellules)
     open_list.append(start_node)
 
     while open_list:
@@ -741,7 +749,7 @@ def a_star_multi_robot(robots_pos, cible_pos, h, cellules, verticaux, horizontau
                 current_node = item
                 current_index = index
         
-        print(current_node.position[0])
+        # print(current_node)
                 
         open_list.pop(current_index)
         closed_list.append(current_node)
@@ -750,33 +758,20 @@ def a_star_multi_robot(robots_pos, cible_pos, h, cellules, verticaux, horizontau
             path = []
             current = current_node
             while current is not None:
-                path.append(current.position)
+                path.append(list(current.position))
                 current = current.parent
-            return path[::-1] 
+            return path[::-1]
 
-        # children = []
-        # for i in range(len(robots_pos)): # boucle sur les robots
-        #     # génération des positions enfants
-        #     new_position = list(current_node.position) 
-        #     new_position[i] = move_line(new_position[i], cellules, verticaux, horizontaux, "UP")
-        #     children.append(Node(tuple(new_position), current_node))
-
-        #     new_position = list(current_node.position)
-        #     new_position[i] = move_line(new_position[i], cellules, verticaux, horizontaux, "DOWN")
-        #     children.append(Node(tuple(new_position), current_node))
-
-        #     new_position = list(current_node.position)
-        #     new_position[i] = move_line(new_position[i], cellules, verticaux, horizontaux, "LEFT")
-        #     children.append(Node(tuple(new_position), current_node))
-
-        #     new_position = list(current_node.position)
-        #     new_position[i] = move_line(new_position[i], cellules, verticaux, horizontaux, "RIGHT")
-        #     children.append(Node(tuple(new_position), current_node))
-
-        children = [Node(tuple(new_position), current_node) for new_position in multi_successors(current_node.position, cellules, verticaux, horizontaux, h)]
+        children = [Node(new_position, current_node, new_cel) for new_position, new_cel in multi_successors(current_node.position, current_node.cellule, verticaux, horizontaux, h)]
             
         for child in children:
-            if len([closed_child for closed_child in closed_list if closed_child == child]) > 0:
+            if up_bound and child.g == up_bound:
+                continue
+
+            if np.array_equiv(child.position, child.parent.position):
+                continue
+
+            if len([closed_child for closed_child in closed_list if np.array_equiv(closed_child.position, child.position)]) > 0:
                 continue
 
             child.g = current_node.g + 1
@@ -819,9 +814,7 @@ def log_path(path, f):
     file.close()
 
 def generate_log_instance(f):
-    """
-    NOT WORKING
-    """
+    # NOT WORKING
 
     file = open(f, "r")
     file.readline()
