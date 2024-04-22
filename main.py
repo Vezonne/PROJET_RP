@@ -7,8 +7,10 @@ def mean_time(n,k,ite):
     resultat= np.zeros((5, ite))
 
     i=0
-    upper_bound=20
+    upper_bound=4
+
     while i<ite:
+
         print(f"iteration: {i}")
         cellules,verticaux,horizontaux=generateRandomInstances(n,k)
         position_cible = None
@@ -37,50 +39,53 @@ def mean_time(n,k,ite):
         temps[0][i] = end-start
         resultat[0][i] = deep_path
 
-        # ___MULTI_DIVE___
-        start = time.time()
-        multi_path = multi_dive(cellules, verticaux, horizontaux, position_robots, position_cible, deep_path)
-        end = time.time()
-
-        print("Chemin  multi trouvé:", multi_path)
-        print(f"Temps pour trouver le chemin multi: {end-start: .3}s")
-
-        temps[1][i] = end-start
-        resultat[1][i] = multi_path
-
-        # ___A_STAR_H1___
-        start = time.time()
-        a_star_h1_path = a_star_search(position_robots[0], position_cible, 1, cellules, verticaux, horizontaux, deep_path)
-        end = time.time()
-
-        print("Chemin A* h1 trouvé:", len(a_star_h1_path)-1)
-        print(f"Temps pour A* h1: {end-start:.3}s")
-
-        temps[2][i] = end-start
-        resultat[2][i] = len(a_star_h1_path)-1
-
-        # # ___A_STAR_H2___
+        # # ___MULTI_DIVE___
         # start = time.time()
-        # a_star_h2_path = a_star_search(position_robots[0], position_cible, 2, cellules, verticaux, horizontaux, deep_path)
+        # multi_path = multi_dive(cellules, verticaux, horizontaux, position_robots, position_cible, deep_path)
         # end = time.time()
 
-        # print("Chemin A* h2 trouvé:", len(a_star_h2_path)-1)
-        # print(f"Temps pour A* h2: {end-start:.3}s")
+        # print("Chemin  multi trouvé:", multi_path)
+        # print(f"Temps pour trouver le chemin multi: {end-start: .3}s")
 
-        # temps[3][i] = end-start
-        # resultat[3][i] = len(a_star_h2_path)-1
+        # temps[1][i] = end-start
+        # resultat[1][i] = multi_path
 
-        # ___A_STAR_MULTI___
+        h1 = heuristic1(cellules)
+        h2 = heuristic2(cellules, verticaux, horizontaux)
+
+        # # ___A_STAR_H1___
+        # start = time.time()
+        # a_star_h1_path = a_star_search(position_robots[0], position_cible, 1, h1, cellules, verticaux, horizontaux, deep_path)
+        # end = time.time()
+
+        # print("Chemin A* h1 trouvé:", len(a_star_h1_path)-1)
+        # print(f"Temps pour A* h1: {end-start:.3}s")
+
+        # temps[2][i] = end-start
+        # resultat[2][i] = len(a_star_h1_path)-1
+
+        # ___A_STAR_H2___
         start = time.time()
-        a_star_multi_path = a_star_multi_robot(position_robots, position_cible, 1, cellules, verticaux, horizontaux, len(a_star_h1_path)-1)
+        a_star_h2_path = a_star_search(position_robots[0], position_cible, 2, h2, cellules, verticaux, horizontaux, deep_path)
         end = time.time()
 
-        print("Chemin A* multi trouvé:", len(a_star_multi_path)-1)
-        print(f"Temps pour A* multi: {end-start:.3}s\n")
+        print("Chemin A* h2 trouvé:", len(a_star_h2_path)-1)
+        print(f"Temps pour A* h2: {end-start:.3}s")
 
-        temps[4][i] = end-start
-        resultat[4][i] = len(a_star_multi_path)-1
+        temps[3][i] = end-start
+        resultat[3][i] = len(a_star_h2_path)-1
 
+        # # ___A_STAR_MULTI___
+        # start = time.time()
+        # a_star_multi_path = a_star_multi_robot(position_robots, position_cible, 1, cellules, verticaux, horizontaux, len(a_star_h1_path)-1)
+        # end = time.time()
+
+        # print("Chemin A* multi trouvé:", len(a_star_multi_path)-1)
+        # print(f"Temps pour A* multi: {end-start:.3}s")
+
+        # temps[4][i] = end-start
+        # resultat[4][i] = len(a_star_multi_path)-1
+        print()
         i+=1
     
     return temps, resultat
@@ -195,7 +200,7 @@ def presentation():
     showgrid(n,cellules,verticaux,horizontaux)
 
 def main(args=None):
-    n = 16
+    n = 14
     k = 3
     ite = 10
 
@@ -207,17 +212,17 @@ def main(args=None):
     print(f"Taille moyen des résultats trouvé trouvé sur {ite} instances de deep dive: {np.mean(res[0]): .1f}")
     print(f"Temps moyen d'execution sur {ite} instances deep dive: {np.mean(temps[0]): .3}s")
     
-    print(f"Taille moyen des résultats trouvé trouvé sur {ite} instances de multi dive: {np.mean(res[1]): .1f}")
-    print(f"Temps moyen d'execution sur {ite} instances multi dive: {np.mean(temps[1]): .3}s")
+    # print(f"Taille moyen des résultats trouvé trouvé sur {ite} instances de multi dive: {np.mean(res[1]): .1f}")
+    # print(f"Temps moyen d'execution sur {ite} instances multi dive: {np.mean(temps[1]): .3}s")
 
-    print(f"Taille moyen des résultats trouvé trouvé sur {ite} instances de A* h1: {np.mean(res[2]): .1f}")
-    print(f"Temps moyen d'execution sur {ite} instances A* h1: {np.mean(temps[2]): .3}s")
+    # print(f"Taille moyen des résultats trouvé trouvé sur {ite} instances de A* h1: {np.mean(res[2]): .1f}")
+    # print(f"Temps moyen d'execution sur {ite} instances A* h1: {np.mean(temps[2]): .3}s")
 
     print(f"Taille moyen des résultats trouvé trouvé sur {ite} instances de A* h2: {np.mean(res[3]): .1f}")
     print(f"Temps moyen d'execution sur {ite} instances A* h2: {np.mean(temps[3]): .3}s")
 
-    print(f"Taille moyen des résultats trouvé trouvé sur {ite} instances de A* multi: {np.mean(res[4]): .1f}")
-    print(f"Temps moyen d'execution sur {ite} instances A* multi: {np.mean(temps[4]): .3}s")
+    # print(f"Taille moyen des résultats trouvé trouvé sur {ite} instances de A* multi: {np.mean(res[4]): .1f}")
+    # print(f"Temps moyen d'execution sur {ite} instances A* multi: {np.mean(temps[4]): .3}s")
 
     print(f"Temps d'execution total: {end-start: .3}s")
 

@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import random
 import heapq as hq
@@ -583,7 +584,7 @@ class Node:
 
         return str(self.position) + " " + str(self.parent.position) + "" + str(self.g) + " " + str(self.h) + " " + str(self.f)
 
-def a_star_search(position_robot, position_cible, h, cellules, verticaux, horizontaux, up_bound=None):
+def a_star_search(position_robot, position_cible, h, tab, cellules, verticaux, horizontaux, up_bound=None):
     """
     Effectue une recherche A* pour trouver le chemin optimal entre la position du robot et la position cible.
 
@@ -608,6 +609,7 @@ def a_star_search(position_robot, position_cible, h, cellules, verticaux, horizo
     while open_list:
 
         # print("open_list : ", len(open_list))
+        count = 0
 
         current_node = open_list[0]
         current_index = 0
@@ -633,6 +635,9 @@ def a_star_search(position_robot, position_cible, h, cellules, verticaux, horizo
 
         for child in children:
             if up_bound!= None and current_node.g + 1 > up_bound:
+                # count += 1
+                # print()
+                # print_line(f"{count}: {child.position} {child.g} {child.h} {child.f}")
                 continue
 
             if child.position == child.parent.position:
@@ -642,7 +647,7 @@ def a_star_search(position_robot, position_cible, h, cellules, verticaux, horizo
                 continue
 
             child.g = current_node.g + 1
-            child.h = heuristic(cellules, verticaux, horizontaux, h)[child.position[0]][child.position[1]]
+            child.h = tab[child.position[0]][child.position[1]]
             child.f = child.g + child.h
 
             if len([open_node for open_node in open_list if child == open_node and child.g > open_node.g]) > 0:
@@ -694,7 +699,7 @@ def a_star_multi_robot_old(robots_pos, cible_pos, h, cellules, verticaux, horizo
 
     return path
 
-def a_star_multi_robot(robots_pos, cible_pos, h, cellules, verticaux, horizontaux, up_bound=None):
+def a_star_multi_robot(robots_pos, cible_pos, h, tab, cellules, verticaux, horizontaux, up_bound=None):
     """
     Effectue une recherche A* pour trouver le chemin optimal pour plusieurs robots vers une cible.
 
@@ -751,7 +756,7 @@ def a_star_multi_robot(robots_pos, cible_pos, h, cellules, verticaux, horizontau
                 continue
 
             child.g = current_node.g + 1
-            child.h = heuristic(cellules,  verticaux, horizontaux, h)[child.position[0][0]][child.position[0][1]]
+            child.h = tab[child.position[0][0]][child.position[0][1]]
             child.f = child.g + child.h
 
             if len([open_node for open_node in open_list if child == open_node and child.g > open_node.g]) > 0:
@@ -822,3 +827,8 @@ def generate_log_instance(f):
 
     file.close()
     return n, k, cellules, verticaux, horizontaux
+
+def print_line(str):
+    os_clear_command = 'cls' if os.name == 'nt' else 'clear'
+    os.system(os_clear_command)
+    print(str)
