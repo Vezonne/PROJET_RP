@@ -131,7 +131,7 @@ def generateRandomInstances(n,k):
     
     return cellules,verticaux,horizontaux
     
-def showgrid(n,cellules,verticaux,horizontaux,r=None):         
+def showgrid(n,cellules,verticaux,horizontaux,file_name=None):
     plt.grid()    
 
     plt.xlim([0, n])
@@ -171,12 +171,10 @@ def showgrid(n,cellules,verticaux,horizontaux,r=None):
     ax.axes.yaxis.set_ticklabels([])
     plt.grid(True)
 
-    if not r == None:
-        plt.savefig(f'\img\single\Figure_{r}.png')
+    if file_name != None:
+        plt.savefig(file_name)
     else:
         plt.show()
-    
-     
 
 #--------------- DÉPLACEMENTS DU ROBOT -----------------#
 
