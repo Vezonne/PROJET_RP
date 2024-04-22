@@ -2,7 +2,7 @@ import time
 from utils import *
 from test import *
 
-"""def mean_time(n,k,ite):
+def mean_time(n,k,ite):
     temps =[]
     temps1=[]
     resultat=[]
@@ -40,7 +40,7 @@ from test import *
         i+=1
     
     
-    return (np.mean(temps), np.mean(resultat))"""
+    return (np.mean(temps), np.mean(resultat))
 
 def main(args=None):
 
@@ -84,13 +84,6 @@ def main(args=None):
     c_y = np.where(cellules == -1)[1][0]
     position_cible = (c_x,c_y)
 
-    # for i in range(len(cellules)):
-    #     for j in range(len(cellules[i])):
-    #         if cellules[i][j]==-1:
-    #             position_cible=(i,j)
-    #         elif cellules[i][j]>0:
-    #             position_robots[cellules[i][j]-1] = (i,j)
-
     print("\nPositions initial des robots:", position_robots)
     print("Position de la cible:", position_cible)
 
@@ -132,14 +125,13 @@ def main(args=None):
         print("\nPath found with A* and h1:", path_h1)
         print("size:", len(path_h1) - 1)
 
-
-        cel_cp = cellules.copy()
-        pos_cp = position_robots.copy()
-        for i in range(len(path_h1)):
-            cel_cp[pos_cp[0][0]][pos_cp[0][1]] = 0
-            cel_cp[path_h1[i][0]][path_h1[i][1]] = 1
-            pos_cp[0] = path_h1[i]
-            showgrid(n,cel_cp,verticaux,horizontaux)
+        # cel_cp = cellules.copy()
+        # pos_cp = position_robots.copy()
+        # for i in range(len(path_h1)):
+        #     cel_cp[pos_cp[0][0]][pos_cp[0][1]] = 0
+        #     cel_cp[path_h1[i][0]][path_h1[i][1]] = 1
+        #     pos_cp[0] = path_h1[i]
+        #     showgrid(n,cel_cp,verticaux,horizontaux)
 
         start = time.time()
         path_h2 = a_star_search(position_robots[0], position_cible, 2, cellules, verticaux, horizontaux)
