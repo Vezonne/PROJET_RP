@@ -59,76 +59,45 @@ def generateRandomInstances(n,k):
                 horizontaux[i+choixv,j+choixh]=1
                 verticaux[i+choixv,j+choixh]=1
                     
-    if n==4: #pas d'ilot central
-        #on place k robots au hasard (noté 1,2,...,k). Le robot 1 sera le robot devant atteindre la cible but.
-        for i in range(1,k+1):
-            posok=False
-            while not posok:
-                abs=random.randint(0,n-1)
-                ord=random.randint(0,n-1)
-                if cellules[abs,ord]==0:
-                    cellules[abs,ord]=i
-                    posok=True
-                
-        #choix d'une cible but
+    #on ajoute un ilot central
 
+    horizontaux[n//2-2,n//2-1]=1
+    horizontaux[n//2-2,n//2]=1
+    horizontaux[n//2,n//2-1]=1
+    horizontaux[n//2,n//2]=1
+    verticaux[n//2-1,n//2-2]=1
+    verticaux[n//2,n//2-2]=1
+    verticaux[n//2-1,n//2]=1
+    verticaux[n//2,n//2]=1
+
+    #on place k robots au hasard (noté 1,2,...,k), mais pas dans l'ilot central. Le robot 1 sera le robot devant atteindre la cible but.
+
+    for i in range(1,k+1):
         posok=False
         while not posok:
-            butx=random.randint(1,n-2)
-            buty=random.randint(1,n-2)
-            if cellules[butx,butx]==0:  #un robot n'est pas sur la cible but
+            abs=random.randint(0,n-1)
+            ord=random.randint(0,n-1)
+            #pas dans l'ilot central
+            if not((abs==(n//2-1) and ord==(n//2-1)) or (abs==(n//2-1) and ord==(n//2)) or (abs==(n//2) and ord==(n//2-1)) or (abs==(n//2) and ord==(n//2))):
+                if (cellules[abs,ord]==0):
+                    cellules[abs,ord]=i
+                    posok=True
+        
+    #choix d'une cible but
+
+    posok=False
+    it=1
+    while not posok:
+        butx=random.randint(1,n-2)
+        buty=random.randint(1,n-2)
+        #pas dans l'ilot central
+        if not((butx==(n//2-1) and buty==(n//2-1)) or (butx==(n//2-1) and buty==(n//2)) or (butx==(n//2) and buty==(n//2-1)) or (butx==(n//2) and buty==(n//2))):
+            if cellules[butx,buty]==0:  #un robot n'est pas sur la cible but
                 #on vérifie que l'on est dans un "coin"
                 if (((horizontaux[butx-1,buty]==1) or (horizontaux[butx,buty]==1)) and ((verticaux[butx,buty-1]==1) or (verticaux[butx,buty]==1))):
                     cellules[butx,buty]=-1
                     posok=True
-                
-                
-    else:
-        #on ajoute un ilot central
-
-        horizontaux[n//2-2,n//2-1]=1
-        horizontaux[n//2-2,n//2]=1
-        horizontaux[n//2,n//2-1]=1
-        horizontaux[n//2,n//2]=1
-        verticaux[n//2-1,n//2-2]=1
-        verticaux[n//2,n//2-2]=1
-        verticaux[n//2-1,n//2]=1
-        verticaux[n//2,n//2]=1
         
-        #on place k robots au hasard (noté 1,2,...,k), mais pas dans l'ilot central. Le robot 1 sera le robot devant atteindre la cible but.
-    
-        for i in range(1,k+1):
-            posok=False
-            while not posok:
-                abs=random.randint(0,n-1)
-                ord=random.randint(0,n-1)
-                #pas dans l'ilot central
-                if not((abs==(n//2-1) and ord==(n//2-1)) or (abs==(n//2-1) and ord==(n//2)) or (abs==(n//2) and ord==(n//2-1)) or (abs==(n//2) and ord==(n//2))):
-                    if (cellules[abs,ord]==0):
-                        cellules[abs,ord]=i
-                        posok=True
-                
-        #choix d'une cible but
-
-        posok=False
-        while not posok:
-            butx=random.randint(1,n-2)
-            buty=random.randint(1,n-2)
-            #pas dans l'ilot central
-            if not((butx==(n//2-1) and buty==(n//2-1)) or (butx==(n//2-1) and buty==(n//2)) or (butx==(n//2) and buty==(n//2-1)) or (butx==(n//2) and buty==(n//2))):
-                if cellules[butx,butx]==0:  #un robot n'est pas sur la cible but
-                    #on vérifie que l'on est dans un "coin"
-                    if (((horizontaux[butx-1,buty]==1) or (horizontaux[butx,buty]==1)) and ((verticaux[butx,buty-1]==1) or (verticaux[butx,buty]==1))):
-                        cellules[butx,buty]=-1
-                        posok=True
-        
-    #print("murs verticaux =")
-    #print(verticaux)
-    #print("murs horizontaux =")
-    #print(horizontaux)
-    #print("cases du jeu = ")
-    #print(cellules)
-    
     return cellules,verticaux,horizontaux
     
 def showgrid(n,cellules,verticaux,horizontaux,file_name=None):
