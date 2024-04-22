@@ -614,7 +614,7 @@ class Node:
 
         return str(self.position) + " " + str(self.parent.position) + "" + str(self.g) + " " + str(self.h) + " " + str(self.f)
 
-def a_star_search(position_robot, position_cible, h, cellules, verticaux, horizontaux):
+def a_star_search(position_robot, position_cible, h, cellules, verticaux, horizontaux, up_bound=None):
     """
     Effectue une recherche A* pour trouver le chemin optimal entre la position du robot et la position cible.
 
@@ -663,17 +663,23 @@ def a_star_search(position_robot, position_cible, h, cellules, verticaux, horizo
         children = [Node(new_position, current_node, new_cel) for new_position, new_cel in successors(current_node.position, current_node.cellule, verticaux, horizontaux, h)]
 
         for child in children:
-                if len([closed_child for closed_child in closed_list if closed_child == child]) > 0:
-                    continue
+            if up_bound!= None and current_node.g + 1 > up_bound:
+                continue
 
-                child.g = current_node.g + 1
-                child.h = heuristic(cellules, verticaux, horizontaux, h)[child.position[0]][child.position[1]]
-                child.f = child.g + child.h
+            if child.position == child.parent.position:
+                continue
 
-                if len([open_node for open_node in open_list if child == open_node and child.g > open_node.g]) > 0:
-                    continue
+            if len([closed_child for closed_child in closed_list if closed_child == child]) > 0:
+                continue
 
-                open_list.append(child)
+            child.g = current_node.g + 1
+            child.h = heuristic(cellules, verticaux, horizontaux, h)[child.position[0]][child.position[1]]
+            child.f = child.g + child.h
+
+            if len([open_node for open_node in open_list if child == open_node and child.g > open_node.g]) > 0:
+                continue
+
+            open_list.append(child)
 
 def a_star_multi_robot_old(robots_pos, cible_pos, h, cellules, verticaux, horizontaux):
     # NOT WORKING
@@ -766,7 +772,7 @@ def a_star_multi_robot(robots_pos, cible_pos, h, cellules, verticaux, horizontau
         children = [Node(new_position, current_node, new_cel) for new_position, new_cel in multi_successors(current_node.position, current_node.cellule, verticaux, horizontaux, h)]
             
         for child in children:
-            if up_bound and child.g == up_bound:
+            if up_bound != None and current_node.g + 1 > up_bound:
                 continue
 
             if np.array_equiv(child.position, child.parent.position):
